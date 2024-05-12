@@ -1,47 +1,57 @@
 <script lang="ts">
-  import svelteLogo from './assets/svelte.svg'
-  import viteLogo from '/vite.svg'
-  import Counter from './lib/Counter.svelte'
+  import Voronoi from "./lib/Voronoi.svelte";
+  import AStar from "./lib/AStar.svelte";
+  import ConvexHull from "./lib/ConvexHull.svelte";
+
+  let selectedOption: string = "";
+  let selectedProject: typeof Voronoi | typeof ConvexHull | typeof AStar;
+
+  $: {
+    switch (selectedOption) {
+      case "voronoi":
+        selectedProject = Voronoi;
+        break;
+      case "convexHull":
+        selectedProject = ConvexHull;
+        break;
+      case "A*":
+        selectedProject = AStar;
+        break;
+      default:
+        selectedProject = Voronoi;
+        break;
+    }
+  }
 </script>
 
+<h1 id="logo">visualaiz</h1>
+<select id="project-select" bind:value={selectedOption}>
+  <option value="" disabled selected>Make a selection</option>
+  <option value="voronoi">Voronoi Diagram</option>
+  <option value="convexHull">Convex Hull</option>
+  <option value="A*">A* Path Finding</option>
+</select>
 <main>
-  <div>
-    <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-      <img src={viteLogo} class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>Vite + Svelte</h1>
-
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
+  {#if selectedProject}
+    <svelte:component this={selectedProject} />
+  {/if}
 </main>
 
 <style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
+  #logo {
+    color: #0a2540;
+    margin: 10px;
   }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
+
+  #project-select {
+    display: block;
+    padding: 0.5em;
+    border: 2px solid #0a2540;;
+    border-radius: 10px;
+    font-size: 1em;
+    font-weight: bold;
+    margin: 25px auto;
+    color: #0a2540;
+    background-color: #f6f9fc;;
   }
 </style>
