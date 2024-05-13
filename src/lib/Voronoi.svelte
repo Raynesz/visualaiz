@@ -76,5 +76,7 @@
 <style>
   svg {
     padding: 10px;
+    margin: auto;
+    display: block;
   }
 </style>
