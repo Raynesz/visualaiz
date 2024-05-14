@@ -24,34 +24,87 @@
   }
 </script>
 
-<h1 id="logo">visualaiz</h1>
-<select id="project-select" bind:value={selectedOption}>
-  <option value="" disabled selected>Make a selection</option>
-  <option value="voronoi">Voronoi Diagram</option>
-  <option value="convexHull">Convex Hull</option>
-  <option value="A*">A* Path Finding</option>
-</select>
+<header>
+  <h1 id="logo">visualaiz</h1>
+  <button type="button">GitHub</button>
+  <button type="button">About</button>
+</header>
+<span id="project-select">
+  Project Select:
+  <select bind:value={selectedOption}>
+    <option value="" disabled selected>Make a selection</option>
+    <option value="voronoi">Voronoi Diagram</option>
+    <option value="convexHull">Convex Hull</option>
+    <option value="A*">A* Path Finding</option>
+  </select>
+</span>
 <main>
   {#if selectedProject}
     <svelte:component this={selectedProject} />
   {/if}
 </main>
+<footer />
 
 <style>
+  header {
+    display: flex;
+    justify-content: space-between;
+    background-color: #eceff2;
+  }
+
+  header button {
+    border: 2px black solid;
+    border-radius: 7px;
+    height: 50%;
+    margin: auto 15px;
+    font-weight: bold;
+    color: #0a2540;
+    background: linear-gradient(to left, #eceff2 50%, #0a2540 50%) right;
+    background-size: 210%;
+    transition: 0.3s ease-out;
+  }
+
+  header button:hover {
+    background-position: left;
+    color: #eceff2;
+  }
+
   #logo {
     color: #0a2540;
     margin: 10px;
   }
 
   #project-select {
+    width: fit-content;
     display: block;
-    padding: 0.5em;
-    border: 2px solid #0a2540;;
-    border-radius: 10px;
-    font-size: 1em;
-    font-weight: bold;
     margin: 25px auto;
+    font-weight: bold;
     color: #0a2540;
-    background-color: #f6f9fc;;
+  }
+
+  #project-select select {
+    padding: 0.5em;
+    border: 2px solid #0a2540;
+    border-radius: 10px;
+    background-color: #eceff2;
+    font-weight: bold;
+    font-size: 1em;
+    color: #0a2540;
+  }
+
+  main {
+    min-width: 700px;
+  }
+
+  footer {
+    position: relative;
+    background-color: #0a2540;
+    height: 10px;
+  }
+
+  @media screen and (max-width: 768px) {
+    main {
+      min-width: fit-content;
+    }
   }
 </style>
