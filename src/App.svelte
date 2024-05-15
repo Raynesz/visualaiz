@@ -26,8 +26,12 @@
 
 <header>
   <h1 id="logo">visualaiz</h1>
-  <button type="button">GitHub</button>
-  <button type="button">About</button>
+  <nav>
+    <button type="button">About</button>
+    <a href="https://github.com/Raynesz/visualaiz" target="_blank" rel="noreferrer">
+      <img src="src/assets/github-mark.svg" alt="GitHub" />
+    </a>
+  </nav>
 </header>
 <span id="project-select">
   Project Select:
@@ -52,11 +56,21 @@
     background-color: #eceff2;
   }
 
-  header button {
+  nav {
+    display: flex;
+    height: 50%;
+    gap: 20px;
+    margin: auto 10px;
+  }
+
+  nav img {
+    width: 40px;
+  }
+
+  nav button {
     border: 2px black solid;
     border-radius: 7px;
-    height: 50%;
-    margin: auto 15px;
+    margin: auto 0;
     font-weight: bold;
     color: #0a2540;
     background: linear-gradient(to left, #eceff2 50%, #0a2540 50%) right;
@@ -64,7 +78,7 @@
     transition: 0.3s ease-out;
   }
 
-  header button:hover {
+  nav button:hover {
     background-position: left;
     color: #eceff2;
   }
