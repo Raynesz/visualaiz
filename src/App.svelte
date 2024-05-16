@@ -4,7 +4,7 @@
   import ConvexHull from "./lib/ConvexHull.svelte";
 
   let selectedOption: string = "";
-  let selectedProject: typeof Voronoi | typeof ConvexHull | typeof AStar;
+  let selectedProject: typeof Voronoi | typeof ConvexHull | typeof AStar | null;
 
   $: {
     switch (selectedOption) {
@@ -18,7 +18,7 @@
         selectedProject = AStar;
         break;
       default:
-        selectedProject = Voronoi;
+        selectedProject = null;
         break;
     }
   }
@@ -27,22 +27,26 @@
 <header>
   <h1 id="logo">visualaiz</h1>
   <nav>
-    <button type="button">About</button>
+    <button type="button">!</button>
     <a href="https://github.com/Raynesz/visualaiz" target="_blank" rel="noreferrer">
       <img src="src/assets/github-mark.svg" alt="GitHub" />
     </a>
   </nav>
 </header>
-<span id="project-select">
-  Project Select:
-  <select bind:value={selectedOption}>
-    <option value="" disabled selected>Make a selection</option>
-    <option value="voronoi">Voronoi Diagram</option>
-    <option value="convexHull">Convex Hull</option>
-    <option value="A*">A* Path Finding</option>
-  </select>
-</span>
 <main>
+  <p id="app-description">
+    A small personal project that provides a visual and interactive representation of various Computer Science or math
+    concepts.
+  </p>
+  <span id="project-select">
+    Project:
+    <select bind:value={selectedOption}>
+      <option value="" disabled selected>Make a selection</option>
+      <option value="voronoi">Voronoi Diagram</option>
+      <option value="convexHull">Convex Hull</option>
+      <option value="A*">A* Path Finding</option>
+    </select>
+  </span>
   {#if selectedProject}
     <svelte:component this={selectedProject} />
   {/if}
@@ -54,6 +58,7 @@
     display: flex;
     justify-content: space-between;
     background-color: #eceff2;
+    height: fit-content;
   }
 
   nav {
@@ -88,6 +93,15 @@
     margin: 10px;
   }
 
+  #app-description {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #0a2540;
+    max-width: 800px;
+    padding: 10px;
+    text-align: center;
+  }
+
   #project-select {
     width: fit-content;
     display: block;
@@ -107,6 +121,7 @@
   }
 
   main {
+    flex-grow: 1;
     min-width: 700px;
   }
 
