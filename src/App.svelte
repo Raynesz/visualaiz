@@ -1,10 +1,26 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import Voronoi from "./lib/Voronoi.svelte";
   import AStar from "./lib/AStar.svelte";
   import ConvexHull from "./lib/ConvexHull.svelte";
 
   let selectedOption: string = "";
   let selectedProject: typeof Voronoi | typeof ConvexHull | typeof AStar | null;
+
+  let aboutButtonText: string = "About";
+
+  function updateAboutButtonText() {
+    aboutButtonText = window.innerWidth > 768 ? "About" : "!";
+  }
+
+  onMount(() => {
+    updateAboutButtonText();
+    window.addEventListener('resize', updateAboutButtonText);
+
+    return () => {
+            window.removeEventListener('resize', updateAboutButtonText);
+        };
+  });
 
   $: {
     switch (selectedOption) {
@@ -27,7 +43,7 @@
 <header>
   <h1 id="logo">visualaiz</h1>
   <nav>
-    <button type="button">!</button>
+    <button type="button">{aboutButtonText}</button>
     <a href="https://github.com/Raynesz/visualaiz" target="_blank" rel="noreferrer">
       <img src="src/assets/github-mark.svg" alt="GitHub" />
     </a>

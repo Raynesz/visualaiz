@@ -35,7 +35,7 @@
 
   onMount(() => {
     // Determine the dimensions of the canvas according to screen size
-    width = screen.width > 500 ? 480 : screen.width - 20;
+    width = window.innerWidth > 500 ? 480 : window.innerWidth - 20;
     height = width;
 
     // Generate 10 random points within the canvas
