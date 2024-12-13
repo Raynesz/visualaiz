@@ -1,0 +1,111 @@
+<script>
+  import "./app.css";
+  import { goto } from "$app/navigation";
+  import { page } from "$app/stores";
+
+  let selectedOption = "";
+
+  // Navigate when selectedOption changes
+  $: if ($page.url.pathname.slice(1) !== selectedOption) {
+    goto(`/${selectedOption}`);
+  }
+</script>
+
+<header>
+  <h1 id="logo">visualaiz</h1>
+  <nav>
+    <a href="https://github.com/Raynesz/visualaiz" target="_blank" rel="noreferrer">
+      <img src="github-mark.svg" alt="GitHub" />
+    </a>
+  </nav>
+</header>
+<main>
+  <span id="project-select">
+    Project:
+    <select bind:value={selectedOption}>
+      <option value="" disabled>Select a project</option>
+      <option value="voronoi">Voronoi Diagram</option>
+      <option value="convexHull">Convex Hull</option>
+      <option value="astar">A* Path Finding</option>
+      <option value="counter">Counter</option>
+    </select>
+  </span>
+  <slot />
+</main>
+<footer></footer>
+
+<style>
+  header {
+    display: flex;
+    justify-content: space-between;
+    background-color: #eceff2;
+    height: fit-content;
+  }
+
+  nav {
+    display: flex;
+    height: 50%;
+    gap: 20px;
+    margin: auto 10px;
+  }
+
+  nav img {
+    width: 40px;
+  }
+
+  nav button {
+    border: 2px black solid;
+    border-radius: 7px;
+    margin: auto 0;
+    font-weight: bold;
+    color: #0a2540;
+    background: linear-gradient(to left, #eceff2 50%, #0a2540 50%) right;
+    background-size: 210%;
+    transition: 0.3s ease-out;
+  }
+
+  nav button:hover {
+    background-position: left;
+    color: #eceff2;
+  }
+
+  #logo {
+    color: #0a2540;
+    margin: 10px;
+  }
+
+  #project-select {
+    width: fit-content;
+    display: block;
+    margin: 25px auto;
+    font-weight: bold;
+    color: #0a2540;
+  }
+
+  #project-select select {
+    padding: 0.5em;
+    border: 2px solid #0a2540;
+    border-radius: 10px;
+    background-color: #eceff2;
+    font-weight: bold;
+    font-size: 1em;
+    color: #0a2540;
+  }
+
+  main {
+    flex-grow: 1;
+    min-width: 700px;
+  }
+
+  footer {
+    position: relative;
+    background-color: #0a2540;
+    height: 10px;
+  }
+
+  @media screen and (max-width: 768px) {
+    main {
+      min-width: fit-content;
+    }
+  }
+</style>
