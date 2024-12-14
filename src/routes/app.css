@@ -57,7 +57,7 @@ button {
   color: #0a2540;
   background-color: #eceff2;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: background-color 0.4s;
   border-color: #646cff;
   border-width: 1px;
   display: block;
@@ -65,6 +65,9 @@ button {
 }
 button:hover {
   outline: 2px solid #646cff;
+}
+button:active {
+  background-color: #37d877;
 }
 
 svg {
