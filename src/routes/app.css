@@ -60,7 +60,16 @@ button {
   transition: border-color 0.25s;
   border-color: #646cff;
   border-width: 1px;
+  display: block;
+  margin: 10px auto;
 }
 button:hover {
-  border-width: 2px;
+  outline: 2px solid #646cff;
+}
+
+svg {
+  padding: 10px;
+  margin: auto;
+  display: block;
+  touch-action: none;
 }

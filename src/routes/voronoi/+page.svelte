@@ -73,16 +73,3 @@
 
 <svg bind:this={svg} {width} {height}></svg>
 <button onclick={generateRandomPoints}>Regenerate</button>
-
-<style>
-  svg {
-    padding: 10px;
-    margin: auto;
-    display: block;
-    touch-action: none;
-  }
-  button {
-    display: block;
-    margin: 10px auto;
-  }
-</style>
