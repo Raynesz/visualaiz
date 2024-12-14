@@ -1,14 +1,23 @@
-<script>
+<script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import "./app.css";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
+  interface Props {
+    children?: import('svelte').Snippet;
+  }
 
-  let selectedOption = "";
+  let { children }: Props = $props();
+
+  let selectedOption = $state("");
 
   // Navigate when selectedOption changes
-  $: if ($page.url.pathname.slice(1) !== selectedOption) {
-    goto(`/${selectedOption}`);
-  }
+  run(() => {
+    if ($page.url.pathname.slice(1) !== selectedOption) {
+      goto(`/${selectedOption}`);
+    }
+  });
 
   function resetDropdown() {
     selectedOption = "";
@@ -16,7 +25,7 @@
 </script>
 
 <header>
-  <a href="/" on:click={resetDropdown}><h1 id="logo">visualaiz</h1></a>
+  <a href="/" onclick={resetDropdown}><h1 id="logo">visualaiz</h1></a>
   <nav>
     <a href="https://github.com/Raynesz/visualaiz" target="_blank" rel="noreferrer">
       <img src="github-mark.svg" alt="GitHub" />
@@ -34,7 +43,7 @@
       <option value="counter">Counter</option>
     </select>
   </span>
-  <slot />
+  {@render children?.()}
 </main>
 <footer></footer>
 

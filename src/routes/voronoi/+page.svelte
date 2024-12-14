@@ -4,9 +4,9 @@
   import type { Point } from "$lib/types";
   import { pastelColorPalette } from "$lib/colors";
 
-  let svg: SVGSVGElement | null = null;
-  let width: number = 0;
-  let height: number = 0;
+  let svg: SVGSVGElement | null = $state(null);
+  let width: number = $state(0);
+  let height: number = $state(0);
   let points: Point[] = [];
   let currentCircle: SVGCircleElement | null = null; // Reference to the circle currently being dragged
 
@@ -72,7 +72,7 @@
 </script>
 
 <svg bind:this={svg} {width} {height}></svg>
-<button on:click={generateRandomPoints}>Regenerate</button>
+<button onclick={generateRandomPoints}>Regenerate</button>
 
 <style>
   svg {
