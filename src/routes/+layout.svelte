@@ -1,11 +1,9 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import "./app.css";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   interface Props {
-    children?: import('svelte').Snippet;
+    children?: import("svelte").Snippet;
   }
 
   let { children }: Props = $props();
@@ -13,7 +11,7 @@
   let selectedOption = $state("");
 
   // Navigate when selectedOption changes
-  run(() => {
+  $effect(() => {
     if ($page.url.pathname.slice(1) !== selectedOption) {
       goto(`/${selectedOption}`);
     }
@@ -66,6 +64,7 @@
     width: 40px;
   }
 
+  /*
   nav button {
     border: 2px black solid;
     border-radius: 7px;
@@ -81,6 +80,7 @@
     background-position: left;
     color: #eceff2;
   }
+  */
 
   #logo {
     color: #0a2540;
