@@ -9,10 +9,14 @@
   $: if ($page.url.pathname.slice(1) !== selectedOption) {
     goto(`/${selectedOption}`);
   }
+
+  function resetDropdown() {
+    selectedOption = "";
+  }
 </script>
 
 <header>
-  <h1 id="logo">visualaiz</h1>
+  <a href="/" on:click={resetDropdown}><h1 id="logo">visualaiz</h1></a>
   <nav>
     <a href="https://github.com/Raynesz/visualaiz" target="_blank" rel="noreferrer">
       <img src="github-mark.svg" alt="GitHub" />
