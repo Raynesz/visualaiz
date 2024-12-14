@@ -1,3 +1,11 @@
+<script lang="ts">
+  import { onMount } from "svelte";
+
+  onMount(() => {
+    document.title = "visualaiz";
+  });
+</script>
+
 <p id="app-description">
   A small personal project that provides a visual and interactive representation of various Computer Science, Math and
   Computational Geometry concepts.

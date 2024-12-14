@@ -66,6 +66,7 @@
     });
 
   onMount(() => {
+    document.title = "visualaiz - Voronoi Diagram";
     initializeCanvas();
     generateRandomPoints();
   });
