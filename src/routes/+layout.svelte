@@ -8,7 +8,7 @@
 
   let { children }: Props = $props();
 
-  let selectedOption = $state("");
+  let selectedOption = $state($page.url.pathname.slice(1));
 
   // Navigate when selectedOption changes
   $effect(() => {
