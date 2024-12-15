@@ -2,6 +2,7 @@
   import "./app.css";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
+
   interface Props {
     children?: import("svelte").Snippet;
   }
@@ -53,6 +54,17 @@
     height: fit-content;
   }
 
+  header a {
+    text-decoration: inherit;
+  }
+
+  #logo {
+    font-size: 3.2em;
+    line-height: 1.1;
+    color: #0a2540;
+    margin: 10px;
+  }
+
   nav {
     display: flex;
     height: 50%;
@@ -64,27 +76,9 @@
     width: 40px;
   }
 
-  /*
-  nav button {
-    border: 2px black solid;
-    border-radius: 7px;
-    margin: auto 0;
-    font-weight: bold;
-    color: #0a2540;
-    background: linear-gradient(to left, #eceff2 50%, #0a2540 50%) right;
-    background-size: 210%;
-    transition: 0.3s ease-out;
-  }
-
-  nav button:hover {
-    background-position: left;
-    color: #eceff2;
-  }
-  */
-
-  #logo {
-    color: #0a2540;
-    margin: 10px;
+  main {
+    flex-grow: 1;
+    min-width: 700px;
   }
 
   #project-select {
@@ -103,11 +97,6 @@
     font-weight: bold;
     font-size: 1em;
     color: #0a2540;
-  }
-
-  main {
-    flex-grow: 1;
-    min-width: 700px;
   }
 
   footer {
