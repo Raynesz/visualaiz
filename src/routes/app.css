@@ -29,6 +29,13 @@ svg {
   touch-action: none;
 }
 
+.graphics-button-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
 .graphics-button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -43,11 +50,16 @@ svg {
   border-color: #646cff;
   border-width: 1px;
   display: block;
-  margin: 10px auto;
 }
 .graphics-button:hover {
   outline: 2px solid #646cff;
 }
 .graphics-button:active {
-  background-color: #37d877;
+  background-color: #646cff;
+}
+.graphics-button-on {
+  background-color: #8fff73;
+}
+.graphics-button-off {
+  background-color: #ff9090;
 }
