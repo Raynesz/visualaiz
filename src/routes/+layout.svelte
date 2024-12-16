@@ -36,7 +36,7 @@
     Project:
     <select bind:value={selectedOption}>
       <option value="" disabled>Select a project</option>
-      <option value="voronoi">Voronoi Diagram</option>
+      <option value="voronoi">Points in 2D</option>
       <option value="convexHull">Convex Hull</option>
       <option value="astar">A* Path Finding</option>
       <option value="counter">Counter</option>

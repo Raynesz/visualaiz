@@ -143,3 +143,18 @@
     onclick={toggleCells}>Cells</button
   >
 </div>
+<h2>In short:</h2>
+<p class="project-text">
+  The widget above demonstrates the Voronoi diagram of a set of points, usually called <b>sites</b> (black dots), along
+  with its dual, the Delaunay triangulation of the same points in 2D space. In short, pixels that share the same color
+  form what's called a <b>cell</b> and what they have in common is that the nearest site is the one that exists in their
+  cell. That means that the points that lie on the edges of the cells (black lines) are equidistant from the sites of the
+  adjacent cells.
+</p>
+<p class="project-text">
+  As mentioned, the Voronoi diagram is dual to the Delaunay triangulation of its sites. In most cases, the <b
+    >vertices</b
+  >
+  (points where 3 cells meet) of the Voronoi diagram are the circumcenters of the respective Delaunay triangles. In other
+  words, each vertex is the center of a circle, on whose perimeter the 3 neighbouring sites lie upon.
+</p>
