@@ -6,7 +6,7 @@ export const pastelColorPalette = [
     "#c5b0d5", // pastel purple
     "#c49c94", // pastel brown
     "#f7b6d2", // pastel pink
-    "#c7c7c7", // pastel gray
     "#dbdb8d", // pastel yellow-green
     "#9edae5", // pastel teal
+    "#c7c7c7", // pastel gray
 ];

@@ -1,14 +1,16 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import * as d3 from "d3";
-  import type { Point } from "$lib/types";
+  import type { Point, Circle } from "$lib/types";
   import { pastelColorPalette } from "$lib/colors";
 
   let svg: SVGSVGElement | null = $state(null);
   let width: number = $state(0);
   let height: number = $state(0);
   let showCells: boolean = $state(true);
+  let showCircles: boolean = $state(true);
   let showTriangles: boolean = $state(true);
+  let showHull: boolean = $state(true);
 
   let points: Point[] = [];
   let currentCircle: SVGCircleElement | null = null; // Reference to the circle currently being dragged
@@ -21,7 +23,7 @@
 
   // Generate random points
   function generateRandomPoints() {
-    const numPoints = 10;
+    const numPoints = 8;
     points = d3.range(numPoints).map(() => [Math.random() * (width - 60) + 30, Math.random() * (height - 60) + 30]);
     draw();
   }
@@ -31,8 +33,18 @@
     draw();
   }
 
+  function toggleCircles() {
+    showCircles = !showCircles;
+    draw();
+  }
+
   function toggleCells() {
     showCells = !showCells;
+    draw();
+  }
+
+  function toggleHull() {
+    showHull = !showHull;
     draw();
   }
 
@@ -52,8 +64,8 @@
     const delaunay = d3.Delaunay.from(points);
     const voronoi = delaunay.voronoi([0, 0, width, height]);
 
+    // Draw Voronoi cells
     if (showCells) {
-      // Draw Voronoi cells
       const cells = d3.select(svg).selectAll<SVGPathElement, Point[]>("path").data(voronoi.cellPolygons());
 
       cells
@@ -63,8 +75,8 @@
         .attr("stroke", "black");
     }
 
+    // Draw Delaunay triangles
     if (showTriangles) {
-      // Draw Delaunay triangles
       const triangleEdges: [Point, Point][] = [];
       const triangles = delaunay.triangles; // Uint32Array of indices
 
@@ -90,16 +102,91 @@
         .style("pointer-events", "none"); // Click through the lines
     }
 
-    // Draw points
+    // Draw Circumcircles
+    if (showCircles) {
+      const circumcircles: Circle[] = [];
+      const circumcenters = extractPoints(voronoi.circumcenters);
+      for (const [i, cc] of circumcenters.entries()) {
+        let minDistance = Infinity;
+        for (const site of points) {
+          const dx = cc[0] - site[0];
+          const dy = cc[1] - site[1];
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          minDistance = Math.min(minDistance, distance);
+        }
+        const circumcircle: Circle = { center: [cc[0], cc[1]], radius: minDistance };
+        circumcircles.push(circumcircle);
+      }
+
+      d3.select(svg)
+        .selectAll(".circumcircle")
+        .data(circumcircles)
+        .join("circle")
+        .attr("class", "circumcircle")
+        .attr("cx", (d) => d.center[0])
+        .attr("cy", (d) => d.center[1])
+        .attr("r", (d) => d.radius)
+        .attr("fill", "none")
+        .attr("stroke", "red");
+
+      d3.select(svg)
+        .selectAll(".circumcenter")
+        .data(circumcenters)
+        .join("circle")
+        .attr("class", "circumcenter")
+        .attr("cx", (d) => d[0])
+        .attr("cy", (d) => d[1])
+        .attr("r", 4)
+        .attr("fill", "blue");
+    }
+
+    // Draw Convex Hull
+    if (showHull) {
+      const hull = d3.polygonHull(points);
+      // Ensure the convex hull is a valid polygon
+      if (hull) {
+        const hullEdges = [];
+        for (let i = 0; i < hull.length; i++) {
+          const p1 = hull[i];
+          const p2 = hull[(i + 1) % hull.length]; // Wrap around to the first point
+          hullEdges.push([p1, p2]);
+        }
+
+        d3.select(svg)
+          .selectAll<SVGLineElement, [Point, Point]>(".convex-hull-line")
+          .data(hullEdges)
+          .join("line")
+          .attr("class", "convex-hull-line")
+          .attr("x1", (d) => d[0][0])
+          .attr("y1", (d) => d[0][1])
+          .attr("x2", (d) => d[1][0])
+          .attr("y2", (d) => d[1][1])
+          .attr("stroke", "purple")
+          .attr("stroke-width", 2)
+          .style("pointer-events", "none"); // Allow clicking through the lines
+      }
+    }
+
+    // Draw sites
     d3.select(svg)
-      .selectAll<SVGCircleElement, Point>("circle")
+      .selectAll<SVGCircleElement, Point>(".site")
       .data(points)
       .join("circle")
+      .attr("class", "site")
       .attr("cx", (d) => d[0])
       .attr("cy", (d) => d[1])
       .attr("r", 6)
       .attr("fill", "black")
       .call(drag); // Enables drag behavior
+  }
+
+  // In: [x1,y1,x2,y2,x3,y3,...] -> Out: [[x1,y1],[x2,y2],[x3,y3],...]
+  function extractPoints(flatPoints: ArrayLike<number>): Point[] {
+    const extractedPoints: Point[] = [];
+    for (let i = 0; i < flatPoints.length; i += 2) {
+      extractedPoints.push([flatPoints[i], flatPoints[i + 1]]);
+    }
+    return extractedPoints;
   }
 
   // Drag behavior of points
@@ -132,15 +219,27 @@
   <button class="graphics-button" onclick={generateRandomPoints}>Regenerate</button>
   <button
     class="graphics-button"
+    class:graphics-button-on={showCells}
+    class:graphics-button-off={!showCells}
+    onclick={toggleCells}>Cells</button
+  >
+  <button
+    class="graphics-button"
     class:graphics-button-on={showTriangles}
     class:graphics-button-off={!showTriangles}
     onclick={toggleTriangles}>Triangles</button
   >
   <button
     class="graphics-button"
-    class:graphics-button-on={showCells}
-    class:graphics-button-off={!showCells}
-    onclick={toggleCells}>Cells</button
+    class:graphics-button-on={showCircles}
+    class:graphics-button-off={!showCircles}
+    onclick={toggleCircles}>Circles</button
+  >
+  <button
+    class="graphics-button"
+    class:graphics-button-on={showHull}
+    class:graphics-button-off={!showHull}
+    onclick={toggleHull}>C. Hull</button
   >
 </div>
 <h2>In short:</h2>
