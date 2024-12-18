@@ -64,60 +64,84 @@
     const delaunay = d3.Delaunay.from(points);
     const voronoi = delaunay.voronoi([0, 0, width, height]);
 
+    // Iterate through polygons and extract the edges
+    const voronoiEdges: [Point, Point][] = [];
+    for (const polygon of voronoi.cellPolygons()) {
+      for (let i = 0; i < polygon.length; i++) {
+        const start = polygon[i];
+        const end = polygon[(i + 1) % polygon.length]; // Wrap to the first vertex
+        voronoiEdges.push([start, end]);
+      }
+    }
+
+    // Calculate Delaunay triangles
+    const triangleEdges: [Point, Point][] = [];
+
+    for (let i = 0; i < delaunay.triangles.length; i += 3) {
+      const t1 = delaunay.triangles[i];
+      const t2 = delaunay.triangles[i + 1];
+      const t3 = delaunay.triangles[i + 2];
+
+      // Extract edges from each triangle
+      triangleEdges.push([points[t1], points[t2]], [points[t2], points[t3]], [points[t3], points[t1]]);
+    }
+
+    // Calculate Circumcircles
+    const circumcircles: Circle[] = [];
+
+    const circumcenters = extractPoints(voronoi.circumcenters);
+
+    for (const [i, cc] of circumcenters.entries()) {
+      let minDistance = Infinity;
+      for (const site of points) {
+        const dx = cc[0] - site[0];
+        const dy = cc[1] - site[1];
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        minDistance = Math.min(minDistance, distance);
+      }
+      const circumcircle: Circle = { center: [cc[0], cc[1]], radius: minDistance };
+      circumcircles.push(circumcircle);
+    }
+
+    // Calculate Convex Hull
+    const hullEdges = [];
+    const intersections = [];
+    const hull = d3.polygonHull(points);
+
+    if (hull) {
+      // Ensure the convex hull is a valid polygon
+      for (let i = 0; i < hull.length; i++) {
+        const p1 = hull[i];
+        const p2 = hull[(i + 1) % hull.length]; // Wrap around to the first point
+        hullEdges.push([p1, p2]);
+      }
+      for (let i = 0; i < hull.length; i++) {
+        const A = hull[i];
+        const B = hull[(i + 1) % hull.length];
+        for (const edge of voronoiEdges) {
+          const C = edge[0];
+          const D = edge[1];
+          const intersection = getIntersection(A, B, C, D);
+          if (intersection) {
+            intersections.push(intersection);
+          }
+        }
+      }
+    }
+
     // Draw Voronoi cells
     if (showCells) {
-      const cells = d3.select(svg).selectAll<SVGPathElement, Point[]>("path").data(voronoi.cellPolygons());
-
-      cells
+      d3.select(svg)
+        .selectAll<SVGPathElement, Point[]>("path")
+        .data(voronoi.cellPolygons())
         .join("path")
         .attr("d", (d: Point[]) => `M${d.join("L")}Z`)
         .attr("fill", (d, i) => pastelColorPalette[i % pastelColorPalette.length])
         .attr("stroke", "black");
     }
 
-    // Draw Delaunay triangles
-    if (showTriangles) {
-      const triangleEdges: [Point, Point][] = [];
-      const triangles = delaunay.triangles; // Uint32Array of indices
-
-      for (let i = 0; i < triangles.length; i += 3) {
-        const t1 = triangles[i];
-        const t2 = triangles[i + 1];
-        const t3 = triangles[i + 2];
-
-        // Extract edges from each triangle
-        triangleEdges.push([points[t1], points[t2]], [points[t2], points[t3]], [points[t3], points[t1]]);
-      }
-
-      const delaunayLines = d3.select(svg).selectAll<SVGLineElement, [Point, Point]>("line").data(triangleEdges);
-
-      delaunayLines
-        .join("line")
-        .attr("x1", (d) => d[0][0])
-        .attr("y1", (d) => d[0][1])
-        .attr("x2", (d) => d[1][0])
-        .attr("y2", (d) => d[1][1])
-        .attr("stroke", "blue")
-        .attr("stroke-width", 1)
-        .style("pointer-events", "none"); // Click through the lines
-    }
-
-    // Draw Circumcircles
+    // Draw circumcircles
     if (showCircles) {
-      const circumcircles: Circle[] = [];
-      const circumcenters = extractPoints(voronoi.circumcenters);
-      for (const [i, cc] of circumcenters.entries()) {
-        let minDistance = Infinity;
-        for (const site of points) {
-          const dx = cc[0] - site[0];
-          const dy = cc[1] - site[1];
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          minDistance = Math.min(minDistance, distance);
-        }
-        const circumcircle: Circle = { center: [cc[0], cc[1]], radius: minDistance };
-        circumcircles.push(circumcircle);
-      }
-
       d3.select(svg)
         .selectAll(".circumcircle")
         .data(circumcircles)
@@ -140,31 +164,45 @@
         .attr("fill", "blue");
     }
 
-    // Draw Convex Hull
-    if (showHull) {
-      const hull = d3.polygonHull(points);
-      // Ensure the convex hull is a valid polygon
-      if (hull) {
-        const hullEdges = [];
-        for (let i = 0; i < hull.length; i++) {
-          const p1 = hull[i];
-          const p2 = hull[(i + 1) % hull.length]; // Wrap around to the first point
-          hullEdges.push([p1, p2]);
-        }
+    // Draw triangles
+    if (showTriangles) {
+      d3.select(svg)
+        .selectAll<SVGLineElement, [Point, Point]>("line")
+        .data(triangleEdges)
+        .join("line")
+        .attr("x1", (d) => d[0][0])
+        .attr("y1", (d) => d[0][1])
+        .attr("x2", (d) => d[1][0])
+        .attr("y2", (d) => d[1][1])
+        .attr("stroke", "blue")
+        .attr("stroke-width", 1)
+        .style("pointer-events", "none"); // Click through the lines
+    }
 
-        d3.select(svg)
-          .selectAll<SVGLineElement, [Point, Point]>(".convex-hull-line")
-          .data(hullEdges)
-          .join("line")
-          .attr("class", "convex-hull-line")
-          .attr("x1", (d) => d[0][0])
-          .attr("y1", (d) => d[0][1])
-          .attr("x2", (d) => d[1][0])
-          .attr("y2", (d) => d[1][1])
-          .attr("stroke", "purple")
-          .attr("stroke-width", 2)
-          .style("pointer-events", "none"); // Allow clicking through the lines
-      }
+    // Draw Convex Hull
+    if (showHull && hull) {
+      d3.select(svg)
+        .selectAll<SVGLineElement, [Point, Point]>(".convex-hull-line")
+        .data(hullEdges)
+        .join("line")
+        .attr("class", "convex-hull-line")
+        .attr("x1", (d) => d[0][0])
+        .attr("y1", (d) => d[0][1])
+        .attr("x2", (d) => d[1][0])
+        .attr("y2", (d) => d[1][1])
+        .attr("stroke", "purple")
+        .attr("stroke-width", 2)
+        .style("pointer-events", "none"); // Allow clicking through the lines
+
+      d3.select(svg)
+        .selectAll<SVGCircleElement, Point>(".inter")
+        .data(intersections)
+        .join("circle")
+        .attr("class", "inter")
+        .attr("cx", (d) => d[0])
+        .attr("cy", (d) => d[1])
+        .attr("r", 6)
+        .attr("fill", "yellow");
     }
 
     // Draw sites
@@ -178,6 +216,25 @@
       .attr("r", 6)
       .attr("fill", "black")
       .call(drag); // Enables drag behavior
+  }
+
+  function getIntersection(A: Point, B: Point, C: Point, D: Point) {
+    const denominator = (A[0] - B[0]) * (C[1] - D[1]) - (A[1] - B[1]) * (C[0] - D[0]);
+
+    // Parallel or collinear lines
+    if (Math.abs(denominator) < 1e-10) return null;
+
+    const t = ((A[0] - C[0]) * (C[1] - D[1]) - (A[1] - C[1]) * (C[0] - D[0])) / denominator;
+    const u = ((A[0] - C[0]) * (A[1] - B[1]) - (A[1] - C[1]) * (A[0] - B[0])) / denominator;
+
+    // Check if intersection is within the segment bounds
+    if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+      const Px = A[0] + t * (B[0] - A[0]);
+      const Py = A[1] + t * (B[1] - A[1]);
+      return [Px, Py];
+    }
+
+    return null; // No intersection within the line segments
   }
 
   // In: [x1,y1,x2,y2,x3,y3,...] -> Out: [[x1,y1],[x2,y2],[x3,y3],...]
