@@ -8,9 +8,10 @@
   let width: number = $state(0);
   let height: number = $state(0);
   let showCells: boolean = $state(true);
-  let showCircles: boolean = $state(true);
+  let showCircles: boolean = $state(false);
   let showTriangles: boolean = $state(true);
-  let showHull: boolean = $state(true);
+  let showHull: boolean = $state(false); // Show Convex Hull
+  let showBEC: boolean = $state(false); // Show Biggest Empty Circle
 
   let points: Point[] = [];
   let currentCircle: SVGCircleElement | null = null; // Reference to the circle currently being dragged
@@ -45,6 +46,11 @@
 
   function toggleHull() {
     showHull = !showHull;
+    draw();
+  }
+
+  function toggleBEC() {
+    showBEC = !showBEC;
     draw();
   }
 
@@ -108,6 +114,8 @@
     const intersections = [];
     const hull = d3.polygonHull(points);
 
+    let biggestEmptyCircle: Circle | null = null;
+
     if (hull) {
       // Ensure the convex hull is a valid polygon
       for (let i = 0; i < hull.length; i++) {
@@ -121,10 +129,36 @@
         for (const edge of voronoiEdges) {
           const C = edge[0];
           const D = edge[1];
-          const intersection = getIntersection(A, B, C, D);
+          const intersection: Point | null = getIntersection(A, B, C, D);
           if (intersection) {
             intersections.push(intersection);
+
+            // Calculate the Biggest Empty Circle for each intersection
+            let minDistance = Infinity;
+            for (const site of points) {
+              const dx = intersection[0] - site[0];
+              const dy = intersection[1] - site[1];
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              if (distance < minDistance) {
+                minDistance = distance;
+              }
+            }
+
+            // Looking for the Biggest Empty Circle of all intersections
+            const emptyCircle: Circle = { center: intersection, radius: minDistance };
+            if (!biggestEmptyCircle || emptyCircle.radius > biggestEmptyCircle.radius) {
+              biggestEmptyCircle = emptyCircle;
+            }
           }
+        }
+      }
+    }
+
+    // Find the Biggest Empty Circle within the Convex Hull
+    if (biggestEmptyCircle && hull) {
+      for (const circumcircle of circumcircles) {
+        if (circumcircle.radius > biggestEmptyCircle.radius && isPointInPolygon(circumcircle.center, hull)) {
+          biggestEmptyCircle = circumcircle;
         }
       }
     }
@@ -151,7 +185,7 @@
         .attr("cy", (d) => d.center[1])
         .attr("r", (d) => d.radius)
         .attr("fill", "none")
-        .attr("stroke", "red");
+        .attr("stroke", "blue");
 
       d3.select(svg)
         .selectAll(".circumcenter")
@@ -174,8 +208,8 @@
         .attr("y1", (d) => d[0][1])
         .attr("x2", (d) => d[1][0])
         .attr("y2", (d) => d[1][1])
-        .attr("stroke", "blue")
-        .attr("stroke-width", 1)
+        .attr("stroke", "red")
+        .attr("stroke-width", 2)
         .style("pointer-events", "none"); // Click through the lines
     }
 
@@ -194,6 +228,7 @@
         .attr("stroke-width", 2)
         .style("pointer-events", "none"); // Allow clicking through the lines
 
+      /* Draw the intersections
       d3.select(svg)
         .selectAll<SVGCircleElement, Point>(".inter")
         .data(intersections)
@@ -203,6 +238,32 @@
         .attr("cy", (d) => d[1])
         .attr("r", 6)
         .attr("fill", "yellow");
+        */
+    }
+
+    // Draw the Biggest Empty Circle
+    if (showBEC && biggestEmptyCircle) {
+      d3.select(svg)
+        .selectAll(".bec")
+        .data([biggestEmptyCircle])
+        .join("circle")
+        .attr("class", "bec")
+        .attr("cx", (d) => d.center[0])
+        .attr("cy", (d) => d.center[1])
+        .attr("r", (d) => d.radius)
+        .attr("fill", "none")
+        .attr("stroke-width", 2)
+        .attr("stroke", "green");
+
+      d3.select(svg)
+        .selectAll(".bec-center")
+        .data([biggestEmptyCircle.center])
+        .join("circle")
+        .attr("class", "bec-center")
+        .attr("cx", (d) => d[0])
+        .attr("cy", (d) => d[1])
+        .attr("r", 4)
+        .attr("fill", "green");
     }
 
     // Draw sites
@@ -218,7 +279,25 @@
       .call(drag); // Enables drag behavior
   }
 
-  function getIntersection(A: Point, B: Point, C: Point, D: Point) {
+  // Calculates whether a point is inside a polygon by counting how many times a ray intersects the polygon edges when it is fired from the polygon.
+  // Initially, the point is outside the polygon. Therefore, if the ray intersects an odd number of edges, the point is inside the polygon. Otherwise, it is outside.
+  function isPointInPolygon(point: Point, polygon: [number, number][]): boolean {
+    const [px, py] = point;
+    let inside = false;
+
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      const [xi, yi] = polygon[i];
+      const [xj, yj] = polygon[j];
+
+      const intersect = yi > py !== yj > py && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi;
+      if (intersect) inside = !inside;
+    }
+
+    return inside;
+  }
+
+  // Checks if two linear segments intersect and returns the intersection point if it exists
+  function getIntersection(A: Point, B: Point, C: Point, D: Point): Point | null {
     const denominator = (A[0] - B[0]) * (C[1] - D[1]) - (A[1] - B[1]) * (C[0] - D[0]);
 
     // Parallel or collinear lines
@@ -290,13 +369,19 @@
     class="graphics-button"
     class:graphics-button-on={showCircles}
     class:graphics-button-off={!showCircles}
-    onclick={toggleCircles}>Circles</button
+    onclick={toggleCircles}>Circumcircles</button
   >
   <button
     class="graphics-button"
     class:graphics-button-on={showHull}
     class:graphics-button-off={!showHull}
     onclick={toggleHull}>C. Hull</button
+  >
+  <button
+    class="graphics-button"
+    class:graphics-button-on={showBEC}
+    class:graphics-button-off={!showBEC}
+    onclick={toggleBEC}>Biggest Empty Circle</button
   >
 </div>
 <h2>In short:</h2>
