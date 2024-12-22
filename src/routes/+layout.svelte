@@ -2,6 +2,7 @@
   import "./app.css";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
+  import { base } from "$app/paths";
 
   interface Props {
     children?: import("svelte").Snippet;
@@ -9,14 +10,21 @@
 
   let { children }: Props = $props();
 
-  let selectedOption = $state($page.url.pathname.slice(1));
+  let selectedOption = $state(getSelectedProjectFromPath());
 
   // Navigate when selectedOption changes
   $effect(() => {
-    if ($page.url.pathname.slice(1) !== selectedOption) {
-      goto(`/${selectedOption}`);
+    if (getSelectedProjectFromPath() !== selectedOption) {
+      goto(`${base}/${selectedOption}`);
     }
   });
+
+  function getSelectedProjectFromPath() {
+    const relativePath = $page.url.pathname.startsWith(base)
+      ? $page.url.pathname.slice(base.length)
+      : $page.url.pathname; // Get the project path
+    return relativePath.slice(1); // Remove the leading slash
+  }
 
   function resetDropdown() {
     selectedOption = "";
@@ -24,7 +32,8 @@
 </script>
 
 <header>
-  <a href="/" onclick={resetDropdown}><h1 id="logo">visualaiz</h1></a>
+  <a href="/{base.slice(1)}" onclick={resetDropdown}><h1 id="logo">visualaiz</h1></a>
+  <!-- We add the slash but also slice it because locally the base path is "" and in production it is "/visualaiz" -->
   <nav>
     <a href="https://github.com/Raynesz/visualaiz" target="_blank" rel="noreferrer">
       <img src="github-mark.svg" alt="GitHub" />
@@ -36,7 +45,7 @@
     Project:
     <select bind:value={selectedOption}>
       <option value="" disabled>Select a project</option>
-      <option value="voronoi">Points in 2D</option>
+      <option value="points2D">Points in 2D</option>
       <option value="convexHull">Convex Hull</option>
       <option value="astar">A* Path Finding</option>
       <option value="counter">Counter</option>
