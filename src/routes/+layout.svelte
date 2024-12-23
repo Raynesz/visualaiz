@@ -11,10 +11,12 @@
 
   let selectedOption = $state($page.url.pathname.slice(1));
 
+  const basePath = import.meta.env.BASE_PATH || '';
+
   // Navigate when selectedOption changes
   $effect(() => {
     if ($page.url.pathname.slice(1) !== selectedOption) {
-      goto(`/${selectedOption}`);
+      goto(`${basePath}/${selectedOption}`);
     }
   });
 
