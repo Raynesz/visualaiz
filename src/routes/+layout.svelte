@@ -11,6 +11,8 @@
 
   const basePath = import.meta.env.BASE_PATH || "";
 
+  console.log(basePath);
+
   let relativePath = $page.url.pathname.startsWith(basePath)
     ? $page.url.pathname.slice(basePath.length)
     : $page.url.pathname;
