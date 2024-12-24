@@ -2,6 +2,7 @@
   import "./app.css";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
+  import { base } from '$app/paths';
 
   interface Props {
     children?: import("svelte").Snippet;
@@ -9,24 +10,24 @@
 
   let { children }: Props = $props();
 
-  const basePath = process.env.BASE_PATH || "";
+  //const basePath = process.env.BASE_PATH || "";
 
-  console.log("basepath:"+basePath);
+  console.log("basepath:"+base);
 
-  let relativePath = $page.url.pathname.startsWith(basePath)
-    ? $page.url.pathname.slice(basePath.length)
+  let relativePath = $page.url.pathname.startsWith(base)
+    ? $page.url.pathname.slice(base.length)
     : $page.url.pathname;
 
   let selectedOption = $state(relativePath.slice(1));
 
   // Navigate when selectedOption changes
   $effect(() => {
-    relativePath = $page.url.pathname.startsWith(basePath)
-    ? $page.url.pathname.slice(basePath.length)
+    relativePath = $page.url.pathname.startsWith(base)
+    ? $page.url.pathname.slice(base.length)
     : $page.url.pathname;
 
     if (relativePath.slice(1) !== selectedOption) {
-      goto(`${basePath}/${selectedOption}`);
+      goto(`${base}/${selectedOption}`);
     }
   });
 
