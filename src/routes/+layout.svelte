@@ -9,7 +9,7 @@
 
   let { children }: Props = $props();
 
-  const basePath = import.meta.env.BASE_PATH || "";
+  const basePath = process.env.BASE_PATH || "";
 
   console.log(basePath);
 
