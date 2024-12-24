@@ -9,13 +9,21 @@
 
   let { children }: Props = $props();
 
-  let selectedOption = $state($page.url.pathname.slice(1));
+  const basePath = import.meta.env.BASE_PATH || "";
 
-  const basePath = import.meta.env.BASE_PATH || '';
+  let relativePath = $page.url.pathname.startsWith(basePath)
+    ? $page.url.pathname.slice(basePath.length)
+    : $page.url.pathname;
+
+  let selectedOption = $state(relativePath.slice(1));
 
   // Navigate when selectedOption changes
   $effect(() => {
-    if ($page.url.pathname.slice(1) !== selectedOption) {
+    relativePath = $page.url.pathname.startsWith(basePath)
+    ? $page.url.pathname.slice(basePath.length)
+    : $page.url.pathname;
+
+    if (relativePath.slice(1) !== selectedOption) {
       goto(`${basePath}/${selectedOption}`);
     }
   });

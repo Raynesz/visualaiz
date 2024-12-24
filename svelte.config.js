@@ -16,10 +16,10 @@ const config = {
       pages: "build", // Directory for built files
       assets: "build", // Directory for assets
       fallback: "index.html", // Set to 'index.html' for SPA fallback
-      precompress: false, // Enable gzip/brotli compression if needed
+      precompress: false // Enable gzip/brotli compression if needed
     }),
     paths: {
-			base: process.argv.includes('dev') ? '' : "/visualaiz"
+			base: process.argv.includes('dev') ? '' : process.env.BASE_PATH
 		}
   },
 };
