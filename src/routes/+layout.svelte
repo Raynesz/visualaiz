@@ -10,8 +10,6 @@
 
   let { children }: Props = $props();
 
-  //const basePath = process.env.BASE_PATH || "";
-
   console.log("basepath:"+base);
 
   let relativePath = $page.url.pathname.startsWith(base)
@@ -37,7 +35,7 @@
 </script>
 
 <header>
-  <a href="/" onclick={resetDropdown}><h1 id="logo">visualaiz</h1></a>
+  <a href="${base}" onclick={resetDropdown}><h1 id="logo">visualaiz</h1></a>
   <nav>
     <a href="https://github.com/Raynesz/visualaiz" target="_blank" rel="noreferrer">
       <img src="github-mark.svg" alt="GitHub" />
