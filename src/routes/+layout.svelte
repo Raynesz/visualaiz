@@ -25,6 +25,7 @@
     : $page.url.pathname;
 
     if (relativePath.slice(1) !== selectedOption) {
+      console.log("Navigating to: "+`${base}/${selectedOption}`);
       goto(`${base}/${selectedOption}`);
     }
   });
@@ -35,7 +36,7 @@
 </script>
 
 <header>
-  <a href="${base}" onclick={resetDropdown}><h1 id="logo">visualaiz</h1></a>
+  <a href="{base}" onclick={resetDropdown}><h1 id="logo">visualaiz</h1></a>
   <nav>
     <a href="https://github.com/Raynesz/visualaiz" target="_blank" rel="noreferrer">
       <img src="github-mark.svg" alt="GitHub" />
