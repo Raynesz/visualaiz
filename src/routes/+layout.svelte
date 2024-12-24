@@ -11,7 +11,7 @@
 
   const basePath = process.env.BASE_PATH || "";
 
-  console.log(basePath);
+  console.log("basepath:"+basePath);
 
   let relativePath = $page.url.pathname.startsWith(basePath)
     ? $page.url.pathname.slice(basePath.length)
