@@ -2,7 +2,7 @@
   import "./app.css";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
-  import { base } from '$app/paths';
+  import { base } from "$app/paths";
 
   interface Props {
     children?: import("svelte").Snippet;
@@ -10,24 +10,24 @@
 
   let { children }: Props = $props();
 
-  console.log("basepath:"+base);
+  console.log("basepath:" + base);
 
-  let relativePath = $page.url.pathname.startsWith(base)
-    ? $page.url.pathname.slice(base.length)
-    : $page.url.pathname;
+  let relativePath = $page.url.pathname.startsWith(base) ? $page.url.pathname.slice(base.length) : $page.url.pathname;
 
   let selectedOption = $state(relativePath.slice(1));
 
+  console.log("Navigating to: " + `${base}/${selectedOption}`);
+  console.log("basepath:" + base);
+  console.log("relative:" + relativePath);
+
   // Navigate when selectedOption changes
   $effect(() => {
-    relativePath = $page.url.pathname.startsWith(base)
-    ? $page.url.pathname.slice(base.length)
-    : $page.url.pathname;
+    relativePath = $page.url.pathname.startsWith(base) ? $page.url.pathname.slice(base.length) : $page.url.pathname;
 
     if (relativePath.slice(1) !== selectedOption) {
-      console.log("Navigating to: "+`${base}/${selectedOption}`);
-      console.log("basepath:"+base);
-      console.log("relative:"+relativePath);
+      console.log("Navigating to: " + `${base}/${selectedOption}`);
+      console.log("basepath:" + base);
+      console.log("relative:" + relativePath);
       goto(`${base}/${selectedOption}`);
     }
   });

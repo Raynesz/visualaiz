@@ -15,7 +15,7 @@ const config = {
       // Options for static adapter
       pages: "build", // Directory for built files
       assets: "build", // Directory for assets
-      fallback: "index.html", // Set to 'index.html' for SPA fallback
+      fallback: "404.html", // Set to 'index.html' for SPA fallback
       precompress: false, // Enable gzip/brotli compression if needed
       prerender: true, // Enable static generation
       ssr: false, // Disable server-side rendering
