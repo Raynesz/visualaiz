@@ -15,7 +15,7 @@ const config = {
       // Options for static adapter
       pages: "build", // Directory for built files
       assets: "build", // Directory for assets
-      fallback: "404.html", // Set to 'index.html' for SPA fallback
+      fallback: "404.html", // GitHub Pages requires 404.html as the fallback
       precompress: false, // Enable gzip/brotli compression if needed
       prerender: true, // Enable static generation
       ssr: false, // Disable server-side rendering
@@ -23,8 +23,8 @@ const config = {
       trailingSlash: "ignore",
     }),
     paths: {
-			base: process.env.BASE_PATH || '',
-		}
+      base: process.env.BASE_PATH || "",
+    },
   },
 };
 

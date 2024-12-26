@@ -10,24 +10,15 @@
 
   let { children }: Props = $props();
 
-  console.log("basepath:" + base);
+  let relativePath = $page.url.pathname.startsWith(base) ? $page.url.pathname.slice(base.length) : $page.url.pathname; // Get the project path
 
-  let relativePath = $page.url.pathname.startsWith(base) ? $page.url.pathname.slice(base.length) : $page.url.pathname;
-
-  let selectedOption = $state(relativePath.slice(1));
-
-  console.log("Navigating to: " + `${base}/${selectedOption}`);
-  console.log("basepath:" + base);
-  console.log("relative:" + relativePath);
+  let selectedOption = $state(relativePath.slice(1)); // Remove the leading slash
 
   // Navigate when selectedOption changes
   $effect(() => {
     relativePath = $page.url.pathname.startsWith(base) ? $page.url.pathname.slice(base.length) : $page.url.pathname;
 
     if (relativePath.slice(1) !== selectedOption) {
-      console.log("Navigating to: " + `${base}/${selectedOption}`);
-      console.log("basepath:" + base);
-      console.log("relative:" + relativePath);
       goto(`${base}/${selectedOption}`);
     }
   });
@@ -39,6 +30,7 @@
 
 <header>
   <a href="/{base.slice(1)}" onclick={resetDropdown}><h1 id="logo">visualaiz</h1></a>
+  <!-- We add the slash but also slice it because locally the base path is "" and in production it is "/visualaiz" -->
   <nav>
     <a href="https://github.com/Raynesz/visualaiz" target="_blank" rel="noreferrer">
       <img src="github-mark.svg" alt="GitHub" />
@@ -50,7 +42,7 @@
     Project:
     <select bind:value={selectedOption}>
       <option value="" disabled>Select a project</option>
-      <option value="voronoi">Points in 2D</option>
+      <option value="points2D">Points in 2D</option>
       <option value="convexHull">Convex Hull</option>
       <option value="astar">A* Path Finding</option>
       <option value="counter">Counter</option>

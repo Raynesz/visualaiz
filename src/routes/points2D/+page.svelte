@@ -344,7 +344,7 @@
     });
 
   onMount(() => {
-    document.title = "visualaiz - Voronoi Diagram";
+    document.title = "visualaiz - Points in 2D";
     initializeCanvas();
     generateRandomPoints();
   });
