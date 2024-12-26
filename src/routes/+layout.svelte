@@ -26,6 +26,8 @@
 
     if (relativePath.slice(1) !== selectedOption) {
       console.log("Navigating to: "+`${base}/${selectedOption}`);
+      console.log("basepath:"+base);
+      console.log("relative:"+relativePath);
       goto(`${base}/${selectedOption}`);
     }
   });
@@ -36,7 +38,7 @@
 </script>
 
 <header>
-  <a href="{base}" onclick={resetDropdown}><h1 id="logo">visualaiz</h1></a>
+  <a href="/{base.slice(1)}" onclick={resetDropdown}><h1 id="logo">visualaiz</h1></a>
   <nav>
     <a href="https://github.com/Raynesz/visualaiz" target="_blank" rel="noreferrer">
       <img src="github-mark.svg" alt="GitHub" />

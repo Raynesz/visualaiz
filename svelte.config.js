@@ -16,7 +16,11 @@ const config = {
       pages: "build", // Directory for built files
       assets: "build", // Directory for assets
       fallback: "index.html", // Set to 'index.html' for SPA fallback
-      precompress: false // Enable gzip/brotli compression if needed
+      precompress: false, // Enable gzip/brotli compression if needed
+      prerender: true, // Enable static generation
+      ssr: false, // Disable server-side rendering
+      csr: true, // Enable client-side rendering
+      trailingSlash: "ignore",
     }),
     paths: {
 			base: process.env.BASE_PATH || '',
