@@ -10,18 +10,21 @@
 
   let { children }: Props = $props();
 
-  let relativePath = $page.url.pathname.startsWith(base) ? $page.url.pathname.slice(base.length) : $page.url.pathname; // Get the project path
-
-  let selectedOption = $state(relativePath.slice(1)); // Remove the leading slash
+  let selectedOption = $state(getSelectedProjectFromPath());
 
   // Navigate when selectedOption changes
   $effect(() => {
-    relativePath = $page.url.pathname.startsWith(base) ? $page.url.pathname.slice(base.length) : $page.url.pathname;
-
-    if (relativePath.slice(1) !== selectedOption) {
+    if (getSelectedProjectFromPath() !== selectedOption) {
       goto(`${base}/${selectedOption}`);
     }
   });
+
+  function getSelectedProjectFromPath() {
+    const relativePath = $page.url.pathname.startsWith(base)
+      ? $page.url.pathname.slice(base.length)
+      : $page.url.pathname; // Get the project path
+    return relativePath.slice(1); // Remove the leading slash
+  }
 
   function resetDropdown() {
     selectedOption = "";
