@@ -17,10 +17,6 @@ const config = {
       assets: "build", // Directory for assets
       fallback: "404.html", // GitHub Pages requires 404.html as the fallback
       precompress: false, // Enable gzip/brotli compression if needed
-      prerender: true, // Enable static generation
-      ssr: false, // Disable server-side rendering
-      csr: true, // Enable client-side rendering
-      trailingSlash: "ignore",
     }),
     paths: {
       base: process.env.BASE_PATH || "",
