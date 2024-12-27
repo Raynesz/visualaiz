@@ -53,7 +53,7 @@
   </span>
   {@render children?.()}
 </main>
-<footer></footer>
+<footer><a href="https://raynesz.dev/" target="_blank" rel="noreferrer">[who made this?]</a></footer>
 
 <style>
   header {
@@ -63,8 +63,9 @@
     height: fit-content;
   }
 
-  header a {
-    text-decoration: inherit;
+  a {
+    text-decoration: none;
+    color: inherit;
   }
 
   #logo {
@@ -111,7 +112,12 @@
   footer {
     position: relative;
     background-color: #0a2540;
-    height: 10px;
+    color: white;
+    text-align: right;
+  }
+
+  footer a {
+    margin-right: 15px;
   }
 
   @media screen and (max-width: 768px) {
