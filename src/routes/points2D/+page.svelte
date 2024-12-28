@@ -14,7 +14,6 @@
   let showBEC: boolean = $state(false); // Show Biggest Empty Circle
 
   let points: Point[] = [];
-  let currentCircle: SVGCircleElement | null = null; // Reference to the circle currently being dragged
 
   // Initialize canvas size and points
   function initializeCanvas() {
@@ -26,35 +25,35 @@
   function generateRandomPoints() {
     const numPoints = 8;
     points = d3.range(numPoints).map(() => [Math.random() * (width - 60) + 30, Math.random() * (height - 60) + 30]);
-    draw();
+    updateWidget();
   }
 
   function toggleTriangles() {
     showTriangles = !showTriangles;
-    draw();
+    updateWidget();
   }
 
   function toggleCircles() {
     showCircles = !showCircles;
-    draw();
+    updateWidget();
   }
 
   function toggleCells() {
     showCells = !showCells;
-    draw();
+    updateWidget();
   }
 
   function toggleHull() {
     showHull = !showHull;
-    draw();
+    updateWidget();
   }
 
   function toggleBEC() {
     showBEC = !showBEC;
-    draw();
+    updateWidget();
   }
 
-  function draw(): void {
+  function updateWidget(): void {
     d3.select(svg).selectAll("*").remove(); // Clear the display
 
     d3.select(svg) // Draw the border of the display
@@ -326,22 +325,12 @@
   }
 
   // Drag behavior of points
-  const drag = d3
-    .drag<SVGCircleElement, Point>()
-    .on("start", (event, d) => {
-      currentCircle = event.sourceEvent.target as SVGCircleElement;
-    })
-    .on("drag", (event, d) => {
-      // Update the point's position
-      d[0] = Math.max(0, Math.min(width, event.x)); // Clamp within canvas bounds
-      d[1] = Math.max(0, Math.min(height, event.y));
-      draw();
-      d3.select(currentCircle).attr("fill", "red"); // Highlight the circle
-    })
-    .on("end", (event) => {
-      d3.select(currentCircle).attr("fill", "black"); // Reset circle color
-      currentCircle = null;
-    });
+  const drag = d3.drag<SVGCircleElement, Point>().on("drag", (event, d) => {
+    // Update the point's position
+    d[0] = Math.max(0, Math.min(width, event.x)); // Clamp within canvas bounds
+    d[1] = Math.max(0, Math.min(height, event.y));
+    updateWidget();
+  });
 
   onMount(() => {
     document.title = "visualaiz - Points in 2D";
@@ -351,37 +340,34 @@
 </script>
 
 <svg bind:this={svg} {width} {height} />
-<div class="graphics-button-container">
-  <button class="graphics-button" onclick={generateRandomPoints}>Regenerate</button>
+<div class="widget-button-container">
+  <button class="widget-button" onclick={generateRandomPoints}>Regenerate</button>
   <button
-    class="graphics-button"
-    class:graphics-button-on={showCells}
-    class:graphics-button-off={!showCells}
+    class="widget-button"
+    class:widget-button-on={showCells}
+    class:widget-button-off={!showCells}
     onclick={toggleCells}>Cells</button
   >
   <button
-    class="graphics-button"
-    class:graphics-button-on={showTriangles}
-    class:graphics-button-off={!showTriangles}
+    class="widget-button"
+    class:widget-button-on={showTriangles}
+    class:widget-button-off={!showTriangles}
     onclick={toggleTriangles}>Triangles</button
   >
   <button
-    class="graphics-button"
-    class:graphics-button-on={showCircles}
-    class:graphics-button-off={!showCircles}
+    class="widget-button"
+    class:widget-button-on={showCircles}
+    class:widget-button-off={!showCircles}
     onclick={toggleCircles}>Circumcircles</button
   >
   <button
-    class="graphics-button"
-    class:graphics-button-on={showHull}
-    class:graphics-button-off={!showHull}
+    class="widget-button"
+    class:widget-button-on={showHull}
+    class:widget-button-off={!showHull}
     onclick={toggleHull}>C. Hull</button
   >
-  <button
-    class="graphics-button"
-    class:graphics-button-on={showBEC}
-    class:graphics-button-off={!showBEC}
-    onclick={toggleBEC}>Biggest Empty Circle</button
+  <button class="widget-button" class:widget-button-on={showBEC} class:widget-button-off={!showBEC} onclick={toggleBEC}
+    >Biggest Empty Circle</button
   >
 </div>
 <h2>In short:</h2>

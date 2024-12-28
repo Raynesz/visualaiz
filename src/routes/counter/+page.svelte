@@ -11,6 +11,6 @@
   });
 </script>
 
-<button class="graphics-button" onclick={increment}>
+<button class="widget-button" onclick={increment}>
   count is {count}
 </button>
