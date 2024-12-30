@@ -2,8 +2,8 @@
   import { onMount } from "svelte";
 
   onMount(() => {
-    document.title = "visualaiz - Convex Hull";
+    document.title = "visualaiz - Pathfinding in 2D";
   });
 </script>
 
-<h1>Convex Hull</h1>
+<h1>Pathfinding in 2D</h1>

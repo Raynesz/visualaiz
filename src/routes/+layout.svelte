@@ -46,8 +46,7 @@
     <select bind:value={selectedOption}>
       <option value="" disabled>Select a project</option>
       <option value="points2D">Points in 2D</option>
-      <option value="convexHull">Convex Hull</option>
-      <option value="astar">A* Path Finding</option>
+      <option value="pathfinding2D">Pathfinding in 2D</option>
       <option value="counter">Counter</option>
     </select>
   </span>
