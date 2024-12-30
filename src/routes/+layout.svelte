@@ -56,6 +56,90 @@
 <footer><a href="https://raynesz.dev/" target="_blank" rel="noreferrer">[who made this?]</a></footer>
 
 <style>
+  :global {
+    /* The main graphics display for each project */
+    svg {
+      padding: 10px;
+      margin: auto;
+      display: block;
+      touch-action: none;
+    }
+
+    .widget-hint {
+      width: fit-content;
+      display: flex;
+      color: grey;
+      font-style: italic;
+      margin: 0 auto;
+    }
+
+    .widget-button-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin: 10px auto;
+    }
+
+    .widget-button {
+      border-radius: 8px;
+      border: 1px solid transparent;
+      padding: 0.6em 1.2em;
+      font-size: 1em;
+      font-weight: 500;
+      font-family: inherit;
+      color: #0a2540;
+      background-color: #eceff2;
+      cursor: pointer;
+      transition: background-color 0.4s;
+      border-color: #646cff;
+      border-width: 1px;
+      display: block;
+    }
+    .widget-button:hover {
+      outline: 2px solid #646cff;
+    }
+    .widget-button:active {
+      background-color: #646cff;
+    }
+    .widget-button-on {
+      background-color: #8fff73;
+    }
+    .widget-button-off {
+      background-color: #ff9090;
+    }
+
+    .topics {
+      margin: 15px 10px;
+    }
+
+    .topics h3 {
+      display: inline;
+      align-items: center;
+    }
+
+    h2 {
+      margin-left: 10px;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+    .project-text {
+      font-size: 1.1em;
+      margin: 5px 10px;
+      text-align: justify;
+    }
+
+    /*
+    .topics .arrow {
+      cursor: pointer;
+      user-select: none;
+      display: inline-block;
+      margin-right: 8px;
+      transition: transform 0.3s ease;
+    }*/
+  }
+
   header {
     display: flex;
     justify-content: space-between;
@@ -114,6 +198,7 @@
     background-color: #0a2540;
     color: white;
     text-align: right;
+    margin-top: 30px;
   }
 
   footer a {

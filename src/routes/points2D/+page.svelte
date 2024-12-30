@@ -337,51 +337,88 @@
     initializeCanvas();
     generateRandomPoints();
   });
+
+  const buttons = [
+    { label: "Regenerate", onclick: generateRandomPoints, active: null },
+    { label: "Cells", onclick: toggleCells, active: () => showCells },
+    { label: "Triangles", onclick: toggleTriangles, active: () => showTriangles },
+    { label: "Circumcircles", onclick: toggleCircles, active: () => showCircles },
+    { label: "Convex hull", onclick: toggleHull, active: () => showHull },
+    { label: "Biggest empty circle", onclick: toggleBEC, active: () => showBEC },
+  ];
+
+  const topicsText =
+    "Voronoi diagram, Delaunay triangulation, Triangle circumcircle, Convex hull, Biggest empty circle, Line-line intersection";
+  const topicsColors = ["navy", "red", "blue", "purple", "green", "black"];
+
+  /* UNUSED
+  <span
+      tabindex="0"
+      class="arrow"
+      style="transform: rotate({topicsExpanded ? '0deg' : '90deg'});"
+      role="button"
+      onclick={() => (topicsExpanded = !topicsExpanded)}
+      onkeydown={(e) => {
+        if (e.key === "Enter" || e.key === " ") topicsExpanded = !topicsExpanded;
+      }}>▶</span
+    >
+  */
 </script>
 
 <svg bind:this={svg} {width} {height} />
+<div class="widget-hint">Sites can be dragged around.</div>
 <div class="widget-button-container">
-  <button class="widget-button" onclick={generateRandomPoints}>Regenerate</button>
-  <button
-    class="widget-button"
-    class:widget-button-on={showCells}
-    class:widget-button-off={!showCells}
-    onclick={toggleCells}>Cells</button
-  >
-  <button
-    class="widget-button"
-    class:widget-button-on={showTriangles}
-    class:widget-button-off={!showTriangles}
-    onclick={toggleTriangles}>Triangles</button
-  >
-  <button
-    class="widget-button"
-    class:widget-button-on={showCircles}
-    class:widget-button-off={!showCircles}
-    onclick={toggleCircles}>Circumcircles</button
-  >
-  <button
-    class="widget-button"
-    class:widget-button-on={showHull}
-    class:widget-button-off={!showHull}
-    onclick={toggleHull}>C. Hull</button
-  >
-  <button class="widget-button" class:widget-button-on={showBEC} class:widget-button-off={!showBEC} onclick={toggleBEC}
-    >Biggest Empty Circle</button
+  {#each buttons as { label, onclick, active }}
+    <button
+      class="widget-button"
+      class:widget-button-on={active && active()}
+      class:widget-button-off={active && !active()}
+      {onclick}
+    >
+      {label}
+    </button>
+  {/each}
+</div>
+<div class="topics">
+  <h3>Topics:</h3>
+  <span
+    >{#each topicsText.split(", ") as segment, index}
+      <span style="color: {topicsColors[index % topicsColors.length]}; font-weight: bold">{segment}</span>{index <
+      topicsText.split(", ").length - 1
+        ? ", "
+        : ""}
+    {/each}</span
   >
 </div>
 <h2>In short:</h2>
 <p class="project-text">
-  The widget above demonstrates the Voronoi diagram of a set of points, usually called <b>sites</b> (black dots), along
-  with its dual, the Delaunay triangulation of the same points in 2D space. In short, pixels that share the same color
-  form what's called a <b>cell</b> and what they have in common is that the nearest site is the one that exists in their
-  cell. That means that the points that lie on the edges of the cells (black lines) are equidistant from the sites of the
-  adjacent cells.
+  The widget above demonstrates the <b style="color: navy;">Voronoi diagram</b> of a set of points, usually called
+  <b>sites</b>
+  (black dots), along with its dual, the <b style="color: red;">Delaunay triangulation</b> of the same points in 2D
+  space. In short, pixels that share the same color form what is called a <b>cell</b>. These pixels have in common that
+  the nearest site is the one located within their cell. This means that the points lying on the edges of the cells
+  (black lines) are equidistant from the sites of the adjacent cells.
 </p>
 <p class="project-text">
   As mentioned, the Voronoi diagram is dual to the Delaunay triangulation of its sites. In most cases, the <b
-    >vertices</b
+    style="color: blue;">vertices</b
   >
-  (points where 3 cells meet) of the Voronoi diagram are the circumcenters of the respective Delaunay triangles. In other
-  words, each vertex is the center of a circle, on whose perimeter the 3 neighbouring sites lie upon.
+  (points where three cells meet) of the Voronoi diagram are the circumcenters of the respective Delaunay triangles. In other
+  words, each vertex is the center of a <b style="color: blue;">circle</b>, on whose perimeter the three neighboring
+  sites lie.
+</p>
+<p class="project-text">
+  The Delaunay triangulation is a triangulation of the sites such that no site is inside the circumcircle of any of the
+  triangles. This property is called the <b>Delaunay condition</b>. The Delaunay triangulation is unique and is
+  considered the <b>most regular</b> triangulation of a set of points.
+</p>
+<p class="project-text">
+  The <b style="color: green;">Biggest empty circle</b> is the largest circle that can exist with its center within the
+  <b style="color: purple;">Convex hull</b> of the sites, without including any of them. Its center will always lie on a
+  vertex of the Voronoi diagram or at the intersection of a Voronoi edge and an edge of the Convex hull.
+</p>
+<p class="project-text">
+  The Convex hull of a set of points is the smallest convex set such that every point lies either within it or on its
+  boundary. You can easily visualize it by imagining a rubber band stretched around every point in the set and then
+  releasing it. The Convex hull is the shape that the rubber band takes.
 </p>
