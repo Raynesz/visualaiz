@@ -5,17 +5,23 @@
   import { calculateDistance, orientation } from "$lib";
 
   let svg: SVGSVGElement | null = null;
-  const width: number = window.innerWidth > 500 ? 480 : window.innerWidth - 20;
-  const height: number = width;
+  let svgWidth: number = window.innerWidth > 500 ? 480 : window.innerWidth - 20;
+  let svgHeight: number = svgWidth;
 
   const startPoint: Point = [50, 50];
-  const endPoint: Point = [450, 450];
+  const endPoint: Point = [svgWidth - 50, svgHeight - 50];
+
+  const svgCenterX = svgWidth / 2;
+  const svgCenterY = svgHeight / 2;
+
+  const offsetX = 30;
+
   const obstacleVertices: Point[] = [
-    [220, 190],
-    [320, 190],
-    [320, 290],
-    [220, 290],
-    [270, 240], // Center point
+    [svgCenterX + offsetX - 50, svgCenterY - 50], // Top-left
+    [svgCenterX + offsetX + 50, svgCenterY - 50], // Top-right
+    [svgCenterX + offsetX + 50, svgCenterY + 50], // Bottom-right
+    [svgCenterX + offsetX - 50, svgCenterY + 50], // Bottom-left
+    [svgCenterX + offsetX, svgCenterY], // Center point
   ];
 
   const nodes: Point[] = [startPoint, endPoint, ...obstacleVertices];
@@ -174,8 +180,8 @@
       .append("rect")
       .attr("x", 0)
       .attr("y", 0)
-      .attr("width", width)
-      .attr("height", height)
+      .attr("width", svgWidth)
+      .attr("height", svgHeight)
       .attr("stroke", "black")
       .attr("fill", "none")
       .attr("stroke-width", 3);
@@ -211,4 +217,4 @@
   });
 </script>
 
-<svg bind:this={svg} {width} {height}></svg>
+<svg bind:this={svg} width={svgWidth} height={svgHeight}></svg>
