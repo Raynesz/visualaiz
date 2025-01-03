@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import * as d3 from "d3";
-  import type { Point, Circle } from "$lib/types";
-  import { pastelColorPalette } from "$lib/colors";
+  import type { Point, Circle } from "$lib";
+  import { pastelColorPalette } from "$lib";
 
   let svg: SVGSVGElement | null = $state(null);
   let width: number = $state(0);

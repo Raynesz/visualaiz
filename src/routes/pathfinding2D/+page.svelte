@@ -1,26 +1,21 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import * as d3 from "d3";
+  import type { Point, Edge } from "$lib";
+  import { calculateDistance, orientation } from "$lib";
 
-  let svg: SVGSVGElement | null = $state(null);
+  let svg: SVGSVGElement | null = null;
   const width: number = window.innerWidth > 500 ? 480 : window.innerWidth - 20;
   const height: number = width;
 
-  interface Point {
-    x: number;
-    y: number;
-  }
-
-  type Edge = [Point, Point];
-
-  const startPoint: Point = { x: 50, y: 50 };
-  const endPoint: Point = { x: 450, y: 450 };
+  const startPoint: Point = [50, 50];
+  const endPoint: Point = [450, 450];
   const obstacleVertices: Point[] = [
-    { x: 220, y: 190 },
-    { x: 320, y: 190 },
-    { x: 320, y: 290 },
-    { x: 220, y: 290 },
-    { x: 270, y: 240 }, // Center point
+    [220, 190],
+    [320, 190],
+    [320, 290],
+    [220, 290],
+    [270, 240], // Center point
   ];
 
   const nodes: Point[] = [startPoint, endPoint, ...obstacleVertices];
@@ -28,24 +23,21 @@
   let invalidEdges: Edge[] = [];
 
   function normalizeEdge(edge: Edge): Edge {
-    return edge[0].x < edge[1].x || (edge[0].x === edge[1].x && edge[0].y < edge[1].y) ? edge : [edge[1], edge[0]];
+    const [a, b] = edge;
+    return a[0] < b[0] || (a[0] === b[0] && a[1] < b[1]) ? edge : [b, a];
   }
 
   function removeDuplicateEdges(edges: Edge[]): Edge[] {
     const uniqueEdges = new Set<string>();
     return edges.filter((edge) => {
       const normalizedEdge = normalizeEdge(edge);
-      const key = `${normalizedEdge[0].x},${normalizedEdge[0].y}-${normalizedEdge[1].x},${normalizedEdge[1].y}`;
+      const key = `${normalizedEdge[0][0]},${normalizedEdge[0][1]}-${normalizedEdge[1][0]},${normalizedEdge[1][1]}`;
       if (uniqueEdges.has(key)) {
         return false;
       }
       uniqueEdges.add(key);
       return true;
     });
-  }
-
-  function orientation(a: Point, b: Point, c: Point): number {
-    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
   }
 
   function doEdgesIntersect(edge1: Edge, edge2: Edge): boolean {
@@ -57,7 +49,7 @@
     }
 
     function ccw(a: Point, b: Point, c: Point): boolean {
-      return (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x);
+      return (c[1] - a[1]) * (b[0] - a[0]) > (b[1] - a[1]) * (c[0] - a[0]);
     }
 
     return ccw(p1, q1, q2) !== ccw(p2, q1, q2) && ccw(p1, p2, q1) !== ccw(p1, p2, q2);
@@ -125,10 +117,6 @@
     console.log("Invalid Edges:", invalidEdges);
   }
 
-  function calculateDistance(a: Point, b: Point): number {
-    return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
-  }
-
   function findShortestPath(): Edge[] {
     const distances: Map<Point, number> = new Map();
     const previous: Map<Point, Point | null> = new Map();
@@ -194,7 +182,7 @@
 
     svgSelection
       .append("polygon")
-      .attr("points", obstacleVertices.map((v) => `${v.x},${v.y}`).join(" "))
+      .attr("points", obstacleVertices.map((v) => `${v[0]},${v[1]}`).join(" "))
       .attr("fill", "none")
       .attr("stroke", "black")
       .attr("stroke-width", 2);
@@ -204,8 +192,8 @@
       .data(nodes)
       .enter()
       .append("circle")
-      .attr("cx", (d) => d.x)
-      .attr("cy", (d) => d.y)
+      .attr("cx", (d) => d[0])
+      .attr("cy", (d) => d[1])
       .attr("r", 4)
       .attr("fill", (d) => (d === startPoint ? "green" : d === endPoint ? "blue" : "red"));
 
@@ -214,10 +202,10 @@
       .data(shortestPath)
       .enter()
       .append("line")
-      .attr("x1", (d) => d[0].x)
-      .attr("y1", (d) => d[0].y)
-      .attr("x2", (d) => d[1].x)
-      .attr("y2", (d) => d[1].y)
+      .attr("x1", (d) => d[0][0])
+      .attr("y1", (d) => d[0][1])
+      .attr("x2", (d) => d[1][0])
+      .attr("y2", (d) => d[1][1])
       .attr("stroke", "purple")
       .attr("stroke-width", 3);
   });
