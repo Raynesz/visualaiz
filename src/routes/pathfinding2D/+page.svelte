@@ -165,10 +165,8 @@
     return path.reverse();
   }
 
-  onMount(() => {
-    document.title = "visualaiz - Pathfinding 2D";
+  function updateWidget() {
     buildVisibilityGraph();
-
     const shortestPath = findShortestPath();
     console.log("Shortest Path Edges:", shortestPath);
 
@@ -214,6 +212,11 @@
       .attr("y2", (d) => d[1][1])
       .attr("stroke", "purple")
       .attr("stroke-width", 3);
+  }
+
+  onMount(() => {
+    document.title = "visualaiz - Pathfinding 2D";
+    updateWidget();
   });
 </script>
 
