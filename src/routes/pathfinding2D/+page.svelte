@@ -216,17 +216,6 @@
       .call(dragPolygon);
 
     svgSelection
-      .selectAll("circle")
-      .data(nodes)
-      .enter()
-      .append("circle")
-      .attr("cx", (d) => d[0])
-      .attr("cy", (d) => d[1])
-      .attr("r", 6)
-      .attr("fill", (d) => (d === startPoint ? "green" : d === endPoint ? "blue" : "black"))
-      .call(dragPoints);
-
-    svgSelection
       .selectAll("line.shortest-path")
       .data(shortestPath)
       .enter()
@@ -237,6 +226,17 @@
       .attr("y2", (d) => d[1][1])
       .attr("stroke", "purple")
       .attr("stroke-width", 3);
+
+    svgSelection
+      .selectAll("circle")
+      .data(nodes)
+      .enter()
+      .append("circle")
+      .attr("cx", (d) => d[0])
+      .attr("cy", (d) => d[1])
+      .attr("r", 6)
+      .attr("fill", (d) => (d === startPoint ? "green" : d === endPoint ? "blue" : "black"))
+      .call(dragPoints);
 
     console.log(obstacleVertices);
   }
