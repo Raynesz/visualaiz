@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import * as d3 from "d3";
   import type { Point, Edge } from "$lib";
-  import { calculateDistance, orientation, pastelColorPalette } from "$lib";
+  import { calculateDistance, pastelColorPalette } from "$lib";
 
   let svg: SVGSVGElement | null = null;
   let svgWidth: number = window.innerWidth > 500 ? 480 : window.innerWidth - 20;
@@ -14,9 +14,10 @@
   const svgCenterX = svgWidth / 2;
   const svgCenterY = svgHeight / 2;
 
+  // Place 1st obstacle at the center of the display and offset it 30 pixels
   const offsetX = 30;
 
-  const obstacleVertices: Point[] = [
+  const obstacle1Vertices: Point[] = [
     [svgCenterX + offsetX - 50, svgCenterY - 50], // Top-left
     [svgCenterX + offsetX + 50, svgCenterY - 50], // Top-right
     [svgCenterX + offsetX + 50, svgCenterY + 50], // Bottom-right
@@ -24,7 +25,32 @@
     [svgCenterX + offsetX, svgCenterY], // Center point
   ];
 
-  const nodes: Point[] = [startPoint, endPoint, ...obstacleVertices];
+  // Just a square obstacle
+  const obstacle2Vertices: Point[] = [
+    [100, 100],
+    [150, 100],
+    [150, 150],
+    [100, 150],
+  ];
+
+  // Combine all obstacles
+  const allObstacles: Point[][] = [obstacle1Vertices, obstacle2Vertices];
+
+  // Define the SVG border as a polygon
+  const svgBorder: Point[] = [
+    [0, 0], // Top-left
+    [svgWidth, 0], // Top-right
+    [svgWidth, svgHeight], // Bottom-right
+    [0, svgHeight], // Bottom-left
+  ];
+
+  // Compute all obstacle edges, including the SVG border edges
+  const obstacleEdges: Edge[] = [
+    ...allObstacles.flatMap((obstacle) => obstacle.map((v, i) => [v, obstacle[(i + 1) % obstacle.length]] as Edge)),
+    ...svgBorder.map((v, i) => [v, svgBorder[(i + 1) % svgBorder.length]] as Edge),
+  ];
+
+  const nodes: Point[] = [startPoint, endPoint, ...obstacle1Vertices, ...obstacle2Vertices];
   let validEdges: Edge[] = [];
   let invalidEdges: Edge[] = [];
 
@@ -38,9 +64,7 @@
     return edges.filter((edge) => {
       const normalizedEdge = normalizeEdge(edge);
       const key = `${normalizedEdge[0][0]},${normalizedEdge[0][1]}-${normalizedEdge[1][0]},${normalizedEdge[1][1]}`;
-      if (uniqueEdges.has(key)) {
-        return false;
-      }
+      if (uniqueEdges.has(key)) return false;
       uniqueEdges.add(key);
       return true;
     });
@@ -61,53 +85,35 @@
     return ccw(p1, q1, q2) !== ccw(p2, q1, q2) && ccw(p1, p2, q1) !== ccw(p1, p2, q2);
   }
 
-  function isEdgeValidForStartEnd(from: Point, to: Point): boolean {
-    for (let i = 0; i < obstacleVertices.length; i++) {
-      const v1 = obstacleVertices[i];
-      const v2 = obstacleVertices[(i + 1) % obstacleVertices.length];
-      if (doEdgesIntersect([from, to], [v1, v2])) {
-        return false;
+  function isEdgeValid(edge: Edge): boolean {
+    const [from, to] = edge;
+
+    // Allow edges between consecutive points of the same obstacle
+    for (const obstacle of allObstacles) {
+      const fromIndex = obstacle.indexOf(from);
+      const toIndex = obstacle.indexOf(to);
+
+      if (fromIndex !== -1 && toIndex !== -1) {
+        if (Math.abs(toIndex - fromIndex) === 1 || (fromIndex === 0 && toIndex === obstacle.length - 1)) {
+          return true;
+        }
+        return false; // Non-consecutive points within the same obstacle
       }
     }
-    return true;
-  }
 
-  function isEdgeValid(from: Point, to: Point): boolean {
-    const fromIndex = obstacleVertices.indexOf(from);
-    const toIndex = obstacleVertices.indexOf(to);
-
-    if (fromIndex === -1 || toIndex === -1) return isEdgeValidForStartEnd(from, to);
-
-    if (Math.abs(toIndex - fromIndex) === 1 || (fromIndex === 0 && toIndex === obstacleVertices.length - 1)) {
-      return true;
-    }
-
-    const intermediatePoints: Point[] = [];
-    let i = (fromIndex + 1) % obstacleVertices.length;
-    while (i !== toIndex) {
-      intermediatePoints.push(obstacleVertices[i]);
-      i = (i + 1) % obstacleVertices.length;
-
-      if (intermediatePoints.length > obstacleVertices.length) return false;
-    }
-
-    return intermediatePoints.every((p) => orientation(from, to, p) > 0);
+    // Check for intersection with any obstacle edge
+    return !obstacleEdges.some((obstacleEdge) => doEdgesIntersect(edge, obstacleEdge));
   }
 
   function buildVisibilityGraph(): void {
     validEdges.length = 0;
     invalidEdges.length = 0;
 
-    obstacleVertices.forEach((v, i) => {
-      const nextVertex = obstacleVertices[(i + 1) % obstacleVertices.length];
-      validEdges.push([v, nextVertex]);
-    });
-
     nodes.forEach((from) => {
       nodes.forEach((to) => {
         if (from === to) return;
         const edge: Edge = [from, to];
-        if (isEdgeValid(from, to)) {
+        if (isEdgeValid(edge)) {
           validEdges.push(edge);
         } else {
           invalidEdges.push(edge);
@@ -115,7 +121,6 @@
       });
     });
 
-    // Remove duplicate edges
     validEdges = removeDuplicateEdges(validEdges);
     invalidEdges = removeDuplicateEdges(invalidEdges);
 
@@ -173,47 +178,37 @@
     updateWidget();
   });
 
-  // Drag behavior of obstacles
-  const dragPolygon = d3.drag<SVGPolygonElement, any>().on("drag", function (event) {
-    const dx = event.dx;
-    const dy = event.dy;
-
-    // Update obstacle coordinates based on drag movement
-    obstacleVertices.forEach((v) => {
-      v[0] += dx;
-      v[1] += dy;
-    });
-
-    // Call updateWidget to re-render the updated SVG
-    updateWidget();
-  });
-
   function updateWidget() {
     buildVisibilityGraph();
     const shortestPath = findShortestPath();
-    console.log("Shortest Path Edges:", shortestPath);
 
     const svgSelection = d3.select(svg);
+    svgSelection.selectAll("*").remove();
 
-    svgSelection.selectAll("*").remove(); // Clear the display
+    allObstacles.forEach((obstacle, index) => {
+      svgSelection
+        .append("polygon")
+        .attr("points", obstacle.map((v) => `${v[0]},${v[1]}`).join(" "))
+        .attr("fill", pastelColorPalette[index % pastelColorPalette.length])
+        .attr("stroke", "black")
+        .attr("stroke-width", 2)
+        .datum(obstacle) // Attach the obstacle vertices to this polygon
+        .call(
+          d3.drag<SVGPolygonElement, Point[]>().on("drag", function (event, vertices) {
+            const dx = event.dx;
+            const dy = event.dy;
 
-    svgSelection // Draw the border of the display
-      .append("rect")
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("width", svgWidth)
-      .attr("height", svgHeight)
-      .attr("stroke", "black")
-      .attr("fill", "none")
-      .attr("stroke-width", 3);
+            // Update the associated obstacle's coordinates
+            vertices.forEach((v) => {
+              v[0] += dx;
+              v[1] += dy;
+            });
 
-    svgSelection
-      .append("polygon")
-      .attr("points", obstacleVertices.map((v) => `${v[0]},${v[1]}`).join(" "))
-      .attr("fill", pastelColorPalette[0])
-      .attr("stroke", "black")
-      .attr("stroke-width", 2)
-      .call(dragPolygon);
+            // Call updateWidget to re-render the updated SVG
+            updateWidget();
+          })
+        );
+    });
 
     svgSelection
       .selectAll("line.shortest-path")
@@ -238,7 +233,43 @@
       .attr("fill", (d) => (d === startPoint ? "green" : d === endPoint ? "blue" : "black"))
       .call(dragPoints);
 
-    console.log(obstacleVertices);
+    svgSelection
+      .append("rect")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", svgWidth)
+      .attr("height", svgHeight)
+      .attr("stroke", "black")
+      .attr("fill", "none")
+      .attr("stroke-width", 3);
+
+    // Draw valid edges
+    svgSelection
+      .selectAll("line.valid-edge")
+      .data(validEdges)
+      .enter()
+      .append("line")
+      .attr("x1", (d) => d[0][0])
+      .attr("y1", (d) => d[0][1])
+      .attr("x2", (d) => d[1][0])
+      .attr("y2", (d) => d[1][1])
+      .attr("stroke", "green")
+      .attr("stroke-width", 2)
+      .attr("class", "valid-edge");
+
+    // Draw invalid edges
+    svgSelection
+      .selectAll("line.invalid-edge")
+      .data(invalidEdges)
+      .enter()
+      .append("line")
+      .attr("x1", (d) => d[0][0])
+      .attr("y1", (d) => d[0][1])
+      .attr("x2", (d) => d[1][0])
+      .attr("y2", (d) => d[1][1])
+      .attr("stroke", "red")
+      .attr("stroke-width", 1)
+      .attr("class", "invalid-edge");
   }
 
   onMount(() => {
