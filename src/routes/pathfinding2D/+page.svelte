@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import * as d3 from "d3";
   import type { Point, Edge } from "$lib";
-  import { calculateDistance, orientation } from "$lib";
+  import { calculateDistance, orientation, pastelColorPalette } from "$lib";
 
   let svg: SVGSVGElement | null = null;
   let svgWidth: number = window.innerWidth > 500 ? 480 : window.innerWidth - 20;
@@ -165,6 +165,29 @@
     return path.reverse();
   }
 
+  // Drag behavior of points
+  const dragPoints = d3.drag<SVGCircleElement, Point>().on("drag", (event, d) => {
+    // Update the point's position
+    d[0] = Math.max(0, Math.min(svgWidth, event.x)); // Clamp within canvas bounds
+    d[1] = Math.max(0, Math.min(svgHeight, event.y));
+    updateWidget();
+  });
+
+  // Drag behavior of obstacles
+  const dragPolygon = d3.drag<SVGPolygonElement, any>().on("drag", function (event) {
+    const dx = event.dx;
+    const dy = event.dy;
+
+    // Update obstacle coordinates based on drag movement
+    obstacleVertices.forEach((v) => {
+      v[0] += dx;
+      v[1] += dy;
+    });
+
+    // Call updateWidget to re-render the updated SVG
+    updateWidget();
+  });
+
   function updateWidget() {
     buildVisibilityGraph();
     const shortestPath = findShortestPath();
@@ -187,9 +210,10 @@
     svgSelection
       .append("polygon")
       .attr("points", obstacleVertices.map((v) => `${v[0]},${v[1]}`).join(" "))
-      .attr("fill", "none")
+      .attr("fill", pastelColorPalette[0])
       .attr("stroke", "black")
-      .attr("stroke-width", 2);
+      .attr("stroke-width", 2)
+      .call(dragPolygon);
 
     svgSelection
       .selectAll("circle")
@@ -198,8 +222,9 @@
       .append("circle")
       .attr("cx", (d) => d[0])
       .attr("cy", (d) => d[1])
-      .attr("r", 4)
-      .attr("fill", (d) => (d === startPoint ? "green" : d === endPoint ? "blue" : "red"));
+      .attr("r", 6)
+      .attr("fill", (d) => (d === startPoint ? "green" : d === endPoint ? "blue" : "black"))
+      .call(dragPoints);
 
     svgSelection
       .selectAll("line.shortest-path")
@@ -212,6 +237,8 @@
       .attr("y2", (d) => d[1][1])
       .attr("stroke", "purple")
       .attr("stroke-width", 3);
+
+    console.log(obstacleVertices);
   }
 
   onMount(() => {
