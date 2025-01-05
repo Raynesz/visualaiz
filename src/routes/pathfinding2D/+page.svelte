@@ -174,44 +174,65 @@
 
   // Dijkstra's algorithm for shortest path between start and end points
   function findShortestPath(): Edge[] {
+    // Map that stores the shortest distances from the start point to each node
     const distances: Map<Point, number> = new Map();
+
+    // Map that stores the previous node for each node, used for path reconstruction
     const previous: Map<Point, Point | null> = new Map();
+
+    // Create a set of unvisited nodes (all nodes in the graph at the beginning)
     const unvisited: Set<Point> = new Set(nodes);
 
+    // Initialize distances for all nodes to Infinity, except for the start point which is set to 0
     nodes.forEach((node) => distances.set(node, Infinity));
     distances.set(startPoint, 0);
 
+    // Until there is no unvisited nodes left...
     while (unvisited.size > 0) {
+      // Find the unvisited node with the smallest known distance (greedy selection)
       const current = Array.from(unvisited).reduce((minNode, node) =>
         distances.get(node)! < distances.get(minNode)! ? node : minNode
       );
 
+      // Remove the current node from the unvisited set as it has been processed
       unvisited.delete(current);
 
+      // If the current node is the end point, stop the algorithm (shortest path found)
       if (current === endPoint) break;
 
+      // Loop through all the valid edges to check the neighbors of the current node
       validEdges.forEach(([a, b]) => {
+        // Determine the neighbor of the current node on the edge
         const neighbor = a === current ? b : b === current ? a : null;
+
+        // If a valid neighbor exists and it is still unvisited
         if (neighbor && unvisited.has(neighbor)) {
+          // Calculate the new distance to this neighbor through the current node
           const newDist = distances.get(current)! + calculateDistance(current, neighbor);
+
+          // If the new distance is shorter, update the shortest distance and set the previous node
           if (newDist < distances.get(neighbor)!) {
             distances.set(neighbor, newDist);
-            previous.set(neighbor, current);
+            previous.set(neighbor, current); // Set the previous node as the current node
           }
         }
       });
     }
 
     const path: Edge[] = [];
+
+    // Start from the end point and work backward using the 'previous' map to reconstruct the path
     let currentNode: Point | null = endPoint;
 
+    // Loop through the previous nodes and reconstruct the path in reverse order
     while (currentNode && previous.has(currentNode)) {
       const prevNode = previous.get(currentNode);
-      if (!prevNode) break;
-      path.push([prevNode, currentNode]);
-      currentNode = prevNode;
+      if (!prevNode) break; // If there is no previous node, break the loop
+      path.push([prevNode, currentNode]); // Add the edge to the path
+      currentNode = prevNode; // Move to the previous node
     }
 
+    // Reverse the path so it goes from start to end
     return path.reverse();
   }
 
@@ -291,7 +312,7 @@
       .attr("cx", (d) => d[0])
       .attr("cy", (d) => d[1])
       .attr("r", 6)
-      .attr("fill", (d) => (d === startPoint ? "green" : d === endPoint ? "blue" : "black"))
+      .attr("fill", (d) => (d === startPoint ? "red" : d === endPoint ? "blue" : "black"))
       .call(dragPoints);
 
     svgSelection
@@ -316,8 +337,8 @@
     { label: "Shortest path", onclick: toggleShortestPath, active: () => showShortestPath },
   ];
 
-  const topicsText = "Pathfinding, Visibility graph, Shortest path";
-  const topicsColors = ["navy", "green", "purple"];
+  const topicsText = "Pathfinding, Visibility graph, Shortest path, Dijkstra's algorithm";
+  const topicsColors = ["navy", "green", "purple", "black"];
 </script>
 
 <svg bind:this={svg} width={svgWidth} height={svgHeight}></svg>
@@ -347,9 +368,21 @@
 </div>
 <h2>In short:</h2>
 <p class="project-text">
-  The widget above demonstrates the <b style="color: purple">Shortest path</b> between 2 points in 2D space by utilizing
-  the Visibility Graph. The Visibility Graph is a graph where each vertex represents a point in the space, and each edge
-  represents a line of sight between 2 points. The shortest path between 2 points can be found by running a shortest path
-  algorithm on this graph. The widget allows you to drag and drop the start and end points, as well as the obstacles, and
-  visualize the Visibility Graph and the shortest path.
+  The widget above demonstrates the <b style="color: purple">Shortest Path</b> between two points in 2D space by
+  utilizing the <b style="color: green">Visibility Graph</b> and <b style="color: black">Dijkstra's Algorithm</b>. The
+  Visibility Graph is a graph where each <b style="color: black">node</b> represents a point in the space, and each
+  <b style="color: black">edge</b>
+  represents a line of sight between two points. The shortest path between two points can be found by running a shortest
+  path algorithm on this graph.
+</p>
+<p class="project-text">
+  First, we need to construct the Visibility Graph. This is done by iterating through all nodes in the 2D space and
+  drawing a line from each node to every other node. A line of sight exists if this line does not intersect any obstacle
+  edges. The resulting graph connects all nodes that are directly visible to each other. Next, we apply Dijkstra's
+  Algorithm to find the shortest path from the <b style="color: red">start</b> point to the
+  <b style="color: blue">end</b> point. The algorithm works by assigning an initial distance of infinity to all nodes, except
+  the start node, which is set to zero. It then iteratively selects the node with the smallest known distance, updates the
+  distances to its neighbors based on edge lengths (distances), and finalizes the shortest path to each node. The process
+  continues until the endpoint is reached, and the shortest path is reconstructed by backtracking from the endpoint to the
+  start point using recorded predecessors.
 </p>
