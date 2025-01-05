@@ -21,12 +21,24 @@
     updateWidget();
   }
 
-  // Define the SVG border as a polygon
-  const svgBorder: Point[] = [
-    [0, 0], // Top-left
-    [svgWidth, 0], // Top-right
-    [svgWidth, svgHeight], // Bottom-right
-    [0, svgHeight], // Bottom-left
+  // Define the SVG border as edges (pairs of points)
+  const svgBorderEdges: Edge[] = [
+    [
+      [0, 0],
+      [svgWidth, 0],
+    ], // Top-left to top-right
+    [
+      [svgWidth, 0],
+      [svgWidth, svgHeight],
+    ], // Top-right to bottom-right
+    [
+      [svgWidth, svgHeight],
+      [0, svgHeight],
+    ], // Bottom-right to bottom-left
+    [
+      [0, svgHeight],
+      [0, 0],
+    ], // Bottom-left to top-left
   ];
 
   let startPoint: Point;
@@ -72,7 +84,7 @@
 
     obstacleEdges = [
       ...allObstacles.flatMap((obstacle) => obstacle.map((v, i) => [v, obstacle[(i + 1) % obstacle.length]] as Edge)),
-      ...svgBorder.map((v, i) => [v, svgBorder[(i + 1) % svgBorder.length]] as Edge),
+      ...svgBorderEdges, // Include the border edges here
     ];
 
     // Initialize nodes and edges
@@ -104,6 +116,13 @@
   function isEdgeValid(edge: Edge): boolean {
     const [from, to] = edge;
 
+    // Check if the edge intersects with any border edge (considering the border as an obstacle)
+    const doesIntersectWithBorder = svgBorderEdges.some((borderEdge) => doEdgesIntersect(edge, borderEdge));
+    if (doesIntersectWithBorder) {
+      return false; // If it intersects with the border, invalidate the edge
+    }
+
+    // Check edges for obstacles
     for (const obstacle of allObstacles) {
       const fromIndex = obstacle.indexOf(from);
       const toIndex = obstacle.indexOf(to);
