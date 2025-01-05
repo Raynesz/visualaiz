@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import * as d3 from "d3";
   import type { Point, Edge } from "$lib";
-  import { calculateDistance, removeDuplicateEdges, ccw, pastelColorPalette } from "$lib";
+  import { calculateDistance, removeDuplicateEdges, crossProduct, pastelColorPalette } from "$lib";
 
   let svg: SVGSVGElement | null = null;
   let svgWidth: number = window.innerWidth > 500 ? 480 : window.innerWidth - 20;
@@ -56,7 +56,7 @@
       [456 * scaleX, 305 * scaleY], // Top-right
       [456 * scaleX, 405 * scaleY], // Bottom-right
       [296 * scaleX, 405 * scaleY], // Bottom-left
-      [243 * scaleX, 350 * scaleY], // Center
+      [243 * scaleX, 350 * scaleY], // Far Left
     ];
 
     // Scaled `obstacle2Vertices`
@@ -92,26 +92,61 @@
       return false; // Shared vertices do not count as intersections
     }
 
-    return ccw(p1, q1, q2) !== ccw(p2, q1, q2) && ccw(p1, p2, q1) !== ccw(p1, p2, q2);
+    // Cross product helps determine the orientation of 3 points
+    const o1 = crossProduct(p1, q1, q2); // Orientation of p1 relative to line q1-q2
+    const o2 = crossProduct(p2, q1, q2); // Orientation of p2 relative to line q1-q2
+    const o3 = crossProduct(p1, p2, q1); // Orientation of q1 relative to line p1-p2
+    const o4 = crossProduct(p1, p2, q2); // Orientation of q2 relative to line p1-p2
+
+    return o1 * o2 < 0 && o3 * o4 < 0;
   }
 
   function isEdgeValid(edge: Edge): boolean {
     const [from, to] = edge;
 
-    // Allow edges between consecutive points of the same obstacle
     for (const obstacle of allObstacles) {
       const fromIndex = obstacle.indexOf(from);
       const toIndex = obstacle.indexOf(to);
 
       if (fromIndex !== -1 && toIndex !== -1) {
-        if (Math.abs(toIndex - fromIndex) === 1 || (fromIndex === 0 && toIndex === obstacle.length - 1)) {
+        if (
+          Math.abs(toIndex - fromIndex) === 1 || // Consecutive points
+          (fromIndex === 0 && toIndex === obstacle.length - 1) // Closing edge of polygon
+        ) {
           return true;
         }
-        return false; // Non-consecutive points within the same obstacle
+
+        // Check non-consecutive points of a single obstacle for clear line of sight.
+        // Ensure all intermediate points lie on the right side of the line
+        // assuming the polygon is traversed in a clockwise direction
+        const isVisible = obstacle.every((intermediate, i) => {
+          if (i === fromIndex || i === toIndex) return true; // Skip endpoints
+
+          const o = crossProduct(from, to, intermediate);
+          return o >= 0; // Ensure points lie on the right or collinear
+        });
+
+        if (isVisible) {
+          // Ensure no intersection with other edges of the same obstacle
+          const doesNotIntersect = obstacle.every((_, i) => {
+            const nextIndex = (i + 1) % obstacle.length;
+            const edgeToCheck: Edge = [obstacle[i], obstacle[nextIndex]];
+
+            if (edgeToCheck.includes(from) || edgeToCheck.includes(to)) {
+              return true; // Skip edges involving endpoints
+            }
+
+            return !doEdgesIntersect(edge, edgeToCheck);
+          });
+
+          if (doesNotIntersect) return true;
+        }
+
+        return false; // Non-consecutive points that don't meet criteria
       }
     }
 
-    // Check for intersection with any obstacle edge
+    // Check for intersection with any obstacle edge (global validation)
     return !obstacleEdges.some((obstacleEdge) => doEdgesIntersect(edge, obstacleEdge));
   }
 
@@ -137,6 +172,7 @@
     invalidEdges = removeDuplicateEdges(invalidEdges);
   }
 
+  // Dijkstra's algorithm for shortest path between start and end points
   function findShortestPath(): Edge[] {
     const distances: Map<Point, number> = new Map();
     const previous: Map<Point, Point | null> = new Map();

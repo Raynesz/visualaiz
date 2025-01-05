@@ -21,10 +21,6 @@ export function removeDuplicateEdges(edges: Edge[]): Edge[] {
   });
 }
 
-export function orientation(a: Point, b: Point, c: Point): number {
+export function crossProduct(a: Point, b: Point, c: Point): number {
   return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
-}
-
-export function ccw(a: Point, b: Point, c: Point): boolean {
-  return (c[1] - a[1]) * (b[0] - a[0]) > (b[1] - a[1]) * (c[0] - a[0]);
 }
