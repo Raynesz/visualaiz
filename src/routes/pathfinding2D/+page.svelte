@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import * as d3 from "d3";
   import type { Point, Edge } from "$lib";
-  import { calculateDistance, pastelColorPalette } from "$lib";
+  import { calculateDistance, removeDuplicateEdges, ccw, pastelColorPalette } from "$lib";
 
   let svg: SVGSVGElement | null = null;
   let svgWidth: number = window.innerWidth > 500 ? 480 : window.innerWidth - 20;
@@ -32,27 +32,21 @@
   let startPoint: Point;
   let endPoint: Point;
 
-  let svgCenterX: number;
-  let svgCenterY: number;
-
   let obstacle1Vertices: Point[];
   let obstacle2Vertices: Point[];
-  let allObstacles: Point[][];
-  let obstacleEdges: Edge[];
+  let allObstacles: Point[][]; // Combine all obstacles
+  let obstacleEdges: Edge[]; // Edges of all obstacles
 
-  let nodes: Point[];
-  let validEdges: Edge[];
-  let invalidEdges: Edge[];
+  let nodes: Point[]; // Start, end, and all obstacle vertices
+  let validEdges: Edge[]; // Edges that do not intersect with any obstacle edge
+  let invalidEdges: Edge[]; // Edges that intersect with at least one obstacle edge
 
+  // Reset everything to the initial state
   function resetEverything(): void {
-    // Reset display properties
-    svgCenterX = svgWidth / 2;
-    svgCenterY = svgHeight / 2;
-
     startPoint = [50, 50];
     endPoint = [svgWidth - 50, svgHeight - 50];
 
-    // Scaling factors
+    // Scaling factors that map the original 500x500 space to the SVG dimensions
     const scaleX = svgWidth / 500;
     const scaleY = svgHeight / 500;
 
@@ -90,33 +84,12 @@
     updateWidget();
   }
 
-  // Sets edges to a certain order so that [a, b] and [b, a] are considered the same edge
-  function normalizeEdge(edge: Edge): Edge {
-    const [a, b] = edge;
-    return a[0] < b[0] || (a[0] === b[0] && a[1] < b[1]) ? edge : [b, a];
-  }
-
-  function removeDuplicateEdges(edges: Edge[]): Edge[] {
-    const uniqueEdges = new Set<string>();
-    return edges.filter((edge) => {
-      const normalizedEdge = normalizeEdge(edge);
-      const key = `${normalizedEdge[0][0]},${normalizedEdge[0][1]}-${normalizedEdge[1][0]},${normalizedEdge[1][1]}`;
-      if (uniqueEdges.has(key)) return false;
-      uniqueEdges.add(key);
-      return true;
-    });
-  }
-
   function doEdgesIntersect(edge1: Edge, edge2: Edge): boolean {
     const [p1, p2] = edge1;
     const [q1, q2] = edge2;
 
     if (p1 === q1 || p1 === q2 || p2 === q1 || p2 === q2) {
       return false; // Shared vertices do not count as intersections
-    }
-
-    function ccw(a: Point, b: Point, c: Point): boolean {
-      return (c[1] - a[1]) * (b[0] - a[0]) > (b[1] - a[1]) * (c[0] - a[0]);
     }
 
     return ccw(p1, q1, q2) !== ccw(p2, q1, q2) && ccw(p1, p2, q1) !== ccw(p1, p2, q2);
@@ -147,7 +120,9 @@
     invalidEdges.length = 0;
 
     nodes.forEach((from) => {
+      // From each node...
       nodes.forEach((to) => {
+        // ...to every other node
         if (from === to) return;
         const edge: Edge = [from, to];
         if (isEdgeValid(edge)) {
@@ -292,9 +267,6 @@
       .attr("stroke", "black")
       .attr("fill", "none")
       .attr("stroke-width", 3);
-
-    console.log(obstacle1Vertices);
-    console.log(obstacle2Vertices);
   }
 
   onMount(() => {
