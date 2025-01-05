@@ -1,12 +1,13 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import * as d3 from "d3";
-  import type { Point, Circle } from "$lib/types";
-  import { pastelColorPalette } from "$lib/colors";
+  import type { Point, Circle } from "$lib";
+  import { pastelColorPalette } from "$lib";
 
-  let svg: SVGSVGElement | null = $state(null);
-  let width: number = $state(0);
-  let height: number = $state(0);
+  let svg: SVGSVGElement | null = null;
+  let svgWidth: number = window.innerWidth > 500 ? 480 : window.innerWidth - 20;
+  let svgHeight: number = svgWidth;
+
   let showCells: boolean = $state(true);
   let showCircles: boolean = $state(false);
   let showTriangles: boolean = $state(true);
@@ -15,16 +16,12 @@
 
   let points: Point[] = [];
 
-  // Initialize canvas size and points
-  function initializeCanvas() {
-    width = window.innerWidth > 500 ? 480 : window.innerWidth - 20;
-    height = width;
-  }
-
   // Generate random points
   function generateRandomPoints() {
     const numPoints = 8;
-    points = d3.range(numPoints).map(() => [Math.random() * (width - 60) + 30, Math.random() * (height - 60) + 30]);
+    points = d3
+      .range(numPoints)
+      .map(() => [Math.random() * (svgWidth - 60) + 30, Math.random() * (svgHeight - 60) + 30]);
     updateWidget();
   }
 
@@ -60,14 +57,14 @@
       .append("rect")
       .attr("x", 0)
       .attr("y", 0)
-      .attr("width", width)
-      .attr("height", height)
+      .attr("width", svgWidth)
+      .attr("height", svgHeight)
       .attr("stroke", "black")
       .attr("fill", "none")
       .attr("stroke-width", 3);
 
     const delaunay = d3.Delaunay.from(points);
-    const voronoi = delaunay.voronoi([0, 0, width, height]);
+    const voronoi = delaunay.voronoi([0, 0, svgWidth, svgHeight]);
 
     // Iterate through polygons and extract the edges
     const voronoiEdges: [Point, Point][] = [];
@@ -327,14 +324,13 @@
   // Drag behavior of points
   const drag = d3.drag<SVGCircleElement, Point>().on("drag", (event, d) => {
     // Update the point's position
-    d[0] = Math.max(0, Math.min(width, event.x)); // Clamp within canvas bounds
-    d[1] = Math.max(0, Math.min(height, event.y));
+    d[0] = Math.max(0, Math.min(svgWidth, event.x)); // Clamp within canvas bounds
+    d[1] = Math.max(0, Math.min(svgHeight, event.y));
     updateWidget();
   });
 
   onMount(() => {
     document.title = "visualaiz - Points in 2D";
-    initializeCanvas();
     generateRandomPoints();
   });
 
@@ -365,7 +361,7 @@
   */
 </script>
 
-<svg bind:this={svg} {width} {height} />
+<svg bind:this={svg} width={svgWidth} height={svgHeight} />
 <div class="widget-hint">Sites can be dragged around.</div>
 <div class="widget-button-container">
   {#each buttons as { label, onclick, active }}
