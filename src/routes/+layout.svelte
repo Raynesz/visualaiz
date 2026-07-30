@@ -51,7 +51,7 @@
   </span>
   {@render children?.()}
 </main>
-<footer><a href="https://raynesz.dev/" target="_blank" rel="noreferrer">[who made this?]</a></footer>
+<footer><a href="https://raynesz.github.io/" target="_blank" rel="noreferrer">[who made this?]</a></footer>
 
 <style>
   :global {
